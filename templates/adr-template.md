@@ -1,0 +1,41 @@
+<!--
+  Template: ADR (Architecture Decision Record)
+  Filled by: the adr-writer skill, or a human at decision time
+  Output in a target project: Design/adr/adr-NNN-short-title.md
+  Numbering is sequential and never reused. One decision per ADR.
+-->
+
+# ADR-{{NNN}}: {{TITLE}}
+
+**Status:** proposed | accepted | rejected | superseded by ADR-{{NNN}}
+**Date:** {{YYYY-MM-DD}}
+
+## Context
+
+{{What problem or opportunity triggered this decision? What constraints exist?
+What are we trying to optimise for?}}
+
+## Options considered
+
+### Option A: {{NAME}}
+
+- Pros: {{...}}
+- Cons: {{...}}
+
+### Option B: {{NAME}}
+
+- Pros: {{...}}
+- Cons: {{...}}
+
+<!-- Add Option C etc. if there is a third serious alternative. Delete this comment when done. -->
+
+## Decision
+
+{{Which option was chosen and why. One paragraph is usually enough.}}
+
+## Consequences
+
+- {{What becomes easier.}}
+- {{What becomes harder or more constrained.}}
+- {{What the team now has to remember or maintain.}}
+- {{What is deferred or explicitly out of scope as a result.}}
