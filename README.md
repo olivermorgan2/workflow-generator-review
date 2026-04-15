@@ -39,19 +39,50 @@ for the full list of non-goals.
 
 ## Quick start
 
-1. Install the prerequisites: Git, GitHub CLI (`gh auth login`), and Claude
-   Code. Full list and verification commands in
-   [`docs/install.md`](docs/install.md#1-prerequisites).
-2. Create or clone your new target project:
-   `gh repo create my-project --public --clone && cd my-project`
-3. Clone this kit once, anywhere outside the target project:
-   `git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-generator`
-4. Copy the skills into the target project:
-   `mkdir -p .claude/skills && cp -R ~/src/workflow-generator/skills/* .claude/skills/`
-5. Commit, then pick a starting path — rough idea, standard PRD, or custom
-   PRD — and run the matching skill from inside Claude Code.
+### One-time setup (per machine)
 
-Full step-by-step guide: [`docs/install.md`](docs/install.md).
+Install Git, GitHub CLI, and Claude Code, then authenticate `gh`. Verification
+commands are in [`docs/install.md`](docs/install.md#1-prerequisites).
+
+Clone this kit once, anywhere outside your projects. You reuse this clone
+for every new project you start:
+
+```bash
+git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-generator
+```
+
+### Per new project
+
+1. Create the project on GitHub and `cd` into it:
+
+   ```bash
+   gh repo create my-project --public --clone
+   cd my-project
+   ```
+
+2. Copy the skills into the project:
+
+   ```bash
+   mkdir -p .claude/skills
+   cp -R ~/src/workflow-generator/skills/* .claude/skills/
+   ```
+
+3. Commit the install:
+
+   ```bash
+   git add .claude && git commit -m "chore: install workflow kit"
+   ```
+
+4. Open Claude Code in the project and run the skill that matches what you
+   have in hand:
+
+   | You have… | Run |
+   |---|---|
+   | A rough idea | `/idea-to-prd` |
+   | A standard or custom PRD | `/prd-normalizer`, then `/prd-to-mvp` |
+
+Full step-by-step guide, including `CLAUDE.md` setup and troubleshooting:
+[`docs/install.md`](docs/install.md).
 
 ## What is in this repo
 
