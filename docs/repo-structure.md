@@ -38,7 +38,10 @@ workflow-generator/
   notes/                     ← working notes: issue drafts, per-issue prompts,
                                scratch setup files (kit-repo-only)
   .github/                   ← issue / PR templates for contributions to the kit
-                               (added in Issue #9)
+    ISSUE_TEMPLATE/
+      feature-request.md
+      docs-task.md
+    pull_request_template.md
   .claude/                   ← Claude Code config for this repo
 ```
 

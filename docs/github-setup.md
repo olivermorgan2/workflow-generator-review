@@ -203,13 +203,13 @@ turning on early even solo — they prevent accidental direct commits to
 
 ---
 
-## 7. `.github/` assets (spec for Issue #9)
+## 7. `.github/` assets (shipped by Issue #9)
 
 The `.github/` directory is where GitHub looks for issue and PR templates.
-Issue #9 will add them to the kit; this section defines exactly what they
-must contain so there is no re-deciding later.
+The kit ships three files; this section is the spec they were built
+against and continues to be the contract if they're ever revised.
 
-### `.github/pull_request_template.md`
+### [`.github/pull_request_template.md`](../.github/pull_request_template.md)
 
 **Required sections:**
 
@@ -220,7 +220,7 @@ must contain so there is no re-deciding later.
 - `## Test results` — paste of the test-runner output or "no code changes"
 - `## Manual verification` — steps the reviewer should run, or "none needed"
 
-### `.github/ISSUE_TEMPLATE/feature-request.md`
+### [`.github/ISSUE_TEMPLATE/feature-request.md`](../.github/ISSUE_TEMPLATE/feature-request.md)
 
 **Required frontmatter:** `name`, `about`, `title`, `labels: feature`
 
@@ -234,7 +234,7 @@ must contain so there is no re-deciding later.
 - `## Acceptance criteria`
 - `## Notes` — labels and milestone
 
-### `.github/ISSUE_TEMPLATE/docs-task.md`
+### [`.github/ISSUE_TEMPLATE/docs-task.md`](../.github/ISSUE_TEMPLATE/docs-task.md)
 
 **Required frontmatter:** `name`, `about`, `title`, `labels: docs`
 
@@ -246,8 +246,11 @@ must contain so there is no re-deciding later.
 - `## Acceptance criteria`
 - `## Notes` — milestone
 
-Both issue templates should be editable via the GitHub "New issue"
-chooser once committed to `main` in `.github/ISSUE_TEMPLATE/`.
+Both issue templates are picked up by the GitHub "New issue" chooser
+automatically once they exist in `.github/ISSUE_TEMPLATE/` on the
+default branch. Inline guidance in each template uses HTML comments so
+the rendered issue/PR view is clean even when an author submits without
+deleting the prompts.
 
 ---
 

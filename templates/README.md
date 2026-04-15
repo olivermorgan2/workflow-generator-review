@@ -19,7 +19,7 @@ for the documentation-and-template architecture.
 |---|---|---|---|
 | [`adr-template.md`](adr-template.md) | Architecture Decision Record | `Design/adr/adr-NNN-short-title.md` | `adr-writer` skill (Issue #7) / human |
 | [`issue-template.md`](issue-template.md) | GitHub issue body | Pasted into `gh issue create --body` | `issue-planner` skill / human |
-| [`pr-template.md`](pr-template.md) | Pull request body | `.github/pull_request_template.md` (shipped by Issue #9) | PR author / `pr-review-packager` skill |
+| [`pr-template.md`](pr-template.md) | Pull request body | [`.github/pull_request_template.md`](../.github/pull_request_template.md) | PR author / `pr-review-packager` skill |
 | [`claude-md-template.md`](claude-md-template.md) | Project rules for Claude Code | `CLAUDE.md` at target project root | `workflow-docs` skill / human |
 | [`ai-summary-template.md`](ai-summary-template.md) | AI-readable project summary | `Design/ai-summary.md` | `workflow-docs` skill / human |
 | [`mvp-template.md`](mvp-template.md) | MVP statement | `Design/mvp.md` | `prd-to-mvp` skill (Issue #7) / human |
