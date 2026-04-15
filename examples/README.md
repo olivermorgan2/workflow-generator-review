@@ -6,10 +6,14 @@ paths defined in ADR-003.
 Examples live in the kit repo only — they are reference material for users, not
 something copied into a target project.
 
-## Planned examples
+## Examples
 
-| File | Scenario | Added in |
-|---|---|---|
-| `idea-only-example.md` | Start from a one-paragraph idea | Issue #10 |
-| `standard-prd-example.md` | Start from a conventional PRD | Issue #10 |
-| `custom-prd-example.md` | Start from mixed / custom notes | Issue #10 |
+| File | Scenario |
+|---|---|
+| [`idea-only-example.md`](idea-only-example.md) | Start from a one-paragraph idea (Pace Drift) |
+| [`standard-prd-example.md`](standard-prd-example.md) | Start from a conventional PRD (Release Notes Generator) |
+| [`custom-prd-example.md`](custom-prd-example.md) | Start from mixed / custom notes (Stand-up Notes Bot) |
+
+Each file is a six-section walkthrough with the same structure — pick
+the one that matches your starting point. The header of each example
+points you back here if you chose the wrong one.
