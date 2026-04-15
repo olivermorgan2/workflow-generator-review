@@ -53,27 +53,31 @@ git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-gen
 
 ### Per new project
 
-1. Create the project on GitHub and `cd` into it:
+1. `cd` into the directory where you want the new project folder to live
+   (e.g. `cd ~/src`). The next command creates `my-project/` inside your
+   current working directory.
+
+2. Create the project on GitHub, clone it locally, and `cd` into it:
 
    ```bash
    gh repo create my-project --public --clone
    cd my-project
    ```
 
-2. Copy the skills into the project:
+3. Copy the skills into the project:
 
    ```bash
    mkdir -p .claude/skills
    cp -R ~/src/workflow-generator/skills/* .claude/skills/
    ```
 
-3. Commit the install:
+4. Commit the install:
 
    ```bash
    git add .claude && git commit -m "chore: install workflow kit"
    ```
 
-4. Open Claude Code in the project and run the skill that matches what you
+5. Open Claude Code in the project and run the skill that matches what you
    have in hand:
 
    | You have… | Run |
