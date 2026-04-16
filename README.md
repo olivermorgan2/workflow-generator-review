@@ -27,15 +27,14 @@ for the full list of non-goals.
 
 ## At a glance
 
-- **New projects only** — v1 will not adapt existing repos (ADR-002).
+- **New projects only** — v1 will not adapt existing repos.
 - **Project-local install** — each new project gets its own copy of the
-  skills under `.claude/skills/`. No global install required (ADR-001).
+  skills under `.claude/skills/`. No global install required.
 - **GitHub-first** — issues, labels, milestones, PRs, `main + feature`
-  branch model (ADR-004).
+  branch model.
 - **Plan-first execution** — Claude Code proposes a plan, you approve,
-  then it implements (ADR-006).
-- **Three starting paths** — rough idea, standard PRD, or custom PRD
-  (ADR-003).
+  then it implements.
+- **Three starting paths** — rough idea, standard PRD, or custom PRD.
 
 ## Quick start
 
@@ -53,11 +52,16 @@ git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-gen
 
 ### Per new project
 
-1. `cd` into the directory where you want the new project folder to live
-   (e.g. `cd ~/src`). The next command creates `my-project/` inside your
-   current working directory.
+Throughout these steps, replace `my-project` with the name you want for
+your new project (e.g. `invoice-tracker`). That name becomes both the
+GitHub repo and the local folder.
 
-2. Create the project on GitHub, clone it locally, and `cd` into it:
+1. `cd` into the directory where you want the new project folder to live
+   (e.g. `cd ~/src`). The next command creates the project folder inside
+   your current working directory.
+
+2. Create the project on GitHub, clone it locally, and `cd` into it.
+   `my-project` here is a placeholder — use your own name:
 
    ```bash
    gh repo create my-project --public --clone
@@ -70,6 +74,21 @@ git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-gen
    mkdir -p .claude/skills
    cp -R ~/src/workflow-generator/skills/* .claude/skills/
    ```
+
+   > **Note — hidden folders.** `.claude/` starts with a dot, so it is
+   > hidden by default in macOS Finder and Windows Explorer. To see it
+   > in Finder, press `Cmd+Shift+.`; in Windows Explorer, enable *View →
+   > Show → Hidden items*. You don't need to see it in a GUI — verify
+   > the install from the terminal instead:
+   >
+   > ```bash
+   > ls .claude/skills
+   > ```
+   >
+   > You should see the skill directories (`idea-to-prd`,
+   > `prd-normalizer`, `prd-to-mvp`, `adr-writer`, …). If the command
+   > errors or the directory is empty, step 3's `cp` did not run from
+   > the right place — check the path to your kit clone.
 
 4. Commit the install:
 
@@ -84,6 +103,24 @@ git clone git@github.com:olivermorgan2/workflow-generator.git ~/src/workflow-gen
    |---|---|
    | A rough idea | `/idea-to-prd` |
    | A standard or custom PRD | `/prd-normalizer`, then `/prd-to-mvp` |
+
+### Worked example
+
+Installing the kit into a new project called `invoice-tracker`, starting
+from `~/src` with the kit already cloned at `~/src/workflow-generator`:
+
+```bash
+cd ~/src                                                    # step 1
+gh repo create invoice-tracker --public --clone             # step 2
+cd invoice-tracker
+mkdir -p .claude/skills                                     # step 3
+cp -R ~/src/workflow-generator/skills/* .claude/skills/
+ls .claude/skills                                           # verify
+# → adr-writer  idea-to-prd  prd-normalizer  prd-to-mvp
+git add .claude && git commit -m "chore: install workflow kit"   # step 4
+claude                                                      # step 5
+# then inside Claude Code: /idea-to-prd
+```
 
 Full step-by-step guide, including `CLAUDE.md` setup and troubleshooting:
 [`docs/install.md`](docs/install.md).
