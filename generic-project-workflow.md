@@ -305,7 +305,7 @@ gh label create docs --color 0075CA
 
 ### 6.1 Model
 
-Simple **main + feature branches**. No develop, no release branches, no gitflow.
+Simple **main + feature branches**, aligned with [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow). No develop, no release branches, no gitflow.
 
 ```
 main (stable, always deployable)
@@ -321,7 +321,7 @@ main (stable, always deployable)
 |------|-----------|
 | Always branch from `main` | Start from stable, known-good code |
 | One branch per issue (or related group) | Keeps PRs focused and reviewable |
-| Descriptive branch names | `add-auth-middleware`, not `feature-1` |
+| Descriptive branch names | `<verb>-<short-description>` referencing the issue, e.g. `add-auth-middleware`, `fix-rate-limiter-reset`, `refactor-db-layer`. Avoid generic names like `feature-1`. Include the issue number for traceability when useful: `42-add-auth-middleware`. |
 | Never commit directly to `main` | All changes go through PRs |
 | Delete branches after merge | Prevents branch clutter |
 
@@ -536,6 +536,16 @@ Closes #NN
 EOF
 )"
 ```
+
+### 9.1.1 Draft PRs
+
+For early feedback before implementation is complete, create the PR as a draft:
+
+```bash
+gh pr create --draft --title "Add feature X (ADR-NNN)" --body "..."
+```
+
+Draft PRs signal that the work is in progress and not ready for final review. Convert to ready when implementation and tests are complete: `gh pr ready <number>`.
 
 ### 9.2 PR Body Template
 

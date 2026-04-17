@@ -15,6 +15,7 @@ that gets generated for a target project — that one is rendered from
   for existing repos.
 - The workflow is **GitHub-first** (ADR-004) and **plan-first, issue-by-issue**
   for execution (ADR-006).
+- The branching and PR model follows [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow).
 
 ## Guiding documents
 

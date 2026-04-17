@@ -31,7 +31,7 @@ for the full list of non-goals.
 - **Project-local install** — each new project gets its own copy of the
   skills under `.claude/skills/`. No global install required.
 - **GitHub-first** — issues, labels, milestones, PRs, `main + feature`
-  branch model.
+  branch model aligned with [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow).
 - **Plan-first execution** — Claude Code proposes a plan, you approve,
   then it implements.
 - **Three starting paths** — rough idea, standard PRD, or custom PRD.
