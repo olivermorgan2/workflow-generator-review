@@ -133,7 +133,7 @@ Full step-by-step guide, including `CLAUDE.md` setup and troubleshooting:
 | `docs/` | Kit documentation |
 | `skills/` | Source of the Claude Code skills shipped by the kit |
 | `templates/` | Starter templates rendered into target projects |
-| `examples/` | Worked examples for the three PRD intake paths |
+| `examples/` | Planning-path walkthroughs and a gallery of end-to-end [worked projects](examples/README.md) |
 | `notes/` | Working notes for building the kit |
 
 See [`docs/repo-structure.md`](docs/repo-structure.md) for the full map of
