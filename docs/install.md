@@ -143,11 +143,7 @@ every new project.
 
 ```bash
 cd my-project                                   # target project root
-<<<<<<< HEAD
-mkdir -p .claude/skills Design/adr notes prompts
-=======
 mkdir -p .claude/skills Design/adr prompts notes
->>>>>>> worktree-agent-acac8ea5
 cp -R ~/src/workflow-generator/skills/* .claude/skills/
 cp ~/src/workflow-generator/prompts/_template.md prompts/_template.md
 ```
@@ -185,11 +181,7 @@ The automated installer above does this substitution for you.
 #### 3B.4 Commit the install
 
 ```bash
-<<<<<<< HEAD
-git add .claude CLAUDE.md Design notes prompts
-=======
 git add .claude CLAUDE.md Design prompts notes
->>>>>>> worktree-agent-acac8ea5
 git commit -m "chore: install workflow kit (project-local)"
 ```
 
