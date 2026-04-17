@@ -45,9 +45,10 @@ These change the target project's layout or core artifacts. Decide first — oth
 
 ### 1. `CLAUDE.md` starter template
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-007](../Design/adr/adr-007-claude-md-starter-template.md)
 
 **Context / trigger:** `docs/install.md:102` states the template "will be added in Issue #4" and users currently hand-write a minimal `CLAUDE.md` from a stub. Worth confirming Issue #4 is still open and tracked before duplicating.
 
@@ -65,9 +66,10 @@ These change the target project's layout or core artifacts. Decide first — oth
 
 ### 2. Dedicated `prompts/` folder for issue session briefs
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-008](../Design/adr/adr-008-dedicated-prompts-folder.md)
 
 **Context / trigger:** Filled issue prompts (`issue-N-prompt.md`) currently live in `notes/` alongside freeform working notes, making `notes/` a mixed bag that's hard to scan. The prompts are structured, numbered session briefs — they deserve their own space.
 
@@ -94,9 +96,10 @@ How projects get set up. Depends on knowing the final layout from Layer 1.
 
 ### 3. Installer script
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-009](../Design/adr/adr-009-installer-script.md)
 
 **Context / trigger:** `docs/install.md:169` explicitly flags "an installer script" as a Phase 2 candidate. Current install is a documented `mkdir -p` + `cp -R` flow users run manually (`README.md:71-76`); friction scales with how often users set up new projects.
 
@@ -114,9 +117,10 @@ How projects get set up. Depends on knowing the final layout from Layer 1.
 
 ### 4. Optional `--with-docs` flag on install
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-010](../Design/adr/adr-010-optional-with-docs-flag.md)
 
 **Context / trigger:** The install currently copies only `skills/` (and later `CLAUDE.md`) into the target project. `docs/` explains how the kit itself works — useful to some users who want it local and searchable in their project, unnecessary for users who prefer to read it in the source repo.
 
@@ -149,9 +153,10 @@ These form a chain: issues are created → prompts are prepared → sessions are
 
 ### 5. `issue-planner` skill
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-011](../Design/adr/adr-011-issue-planner-skill.md)
 
 **Context / trigger:** Referenced in `docs/repo-structure.md:87` as a skill that should exist in target projects, but has no source in `skills/`. After `/prd-to-mvp` produces the MVP spec and build-out plan, users currently create GitHub issues manually. No existing GitHub issue tracks this skill.
 
@@ -169,9 +174,10 @@ These form a chain: issues are created → prompts are prepared → sessions are
 
 ### 6. GitHub Projects integration
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-012](../Design/adr/adr-012-github-projects-integration.md)
 
 **Context / trigger:** The kit tracks work via milestones + labels + issues but has no integration with GitHub Projects (the kanban board feature). Users get a flat issue list with no visual workflow view of status across milestones. GitHub Projects provides Todo → In Progress → Done columns, custom fields, and board/table views out of the box.
 
@@ -192,9 +198,10 @@ These form a chain: issues are created → prompts are prepared → sessions are
 
 ### 7. `/prepare-issue` skill for auto-filling issue prompts
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-013](../Design/adr/adr-013-prepare-issue-skill.md)
 
 **Context / trigger:** Users currently fill the issue prompt template manually — copying context from the GitHub issue body, linked ADRs, and the build-out plan phase into the blank form. This is repetitive, error-prone, and the biggest friction point between "issue exists" and "Claude Code session is briefed."
 
@@ -215,9 +222,10 @@ These form a chain: issues are created → prompts are prepared → sessions are
 
 ### 8. `claude-issue-executor` skill
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-014](../Design/adr/adr-014-claude-issue-executor-skill.md)
 
 **Context / trigger:** Referenced in `docs/repo-structure.md:89` as a skill for target projects, but no source exists in `skills/`. This is the execution counterpart to `/prepare-issue` — once the prompt is filled, this skill drives the actual Claude Code implementation session. No GitHub issue tracks it.
 
@@ -241,9 +249,10 @@ Post-implementation: packaging PRs, generating changelogs, cutting releases.
 
 ### 9. `pr-review-packager` skill
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-015](../Design/adr/adr-015-pr-review-packager-skill.md)
 
 **Context / trigger:** Referenced in `docs/repo-structure.md:89` as a target project skill, but no source in `skills/`. After implementation, users manually create PRs and fill the PR template. No GitHub issue tracks it. Note: overlaps with Claude Code's built-in `/review` skill, but serves a different purpose — packaging the PR rather than reviewing it.
 
@@ -261,9 +270,10 @@ Post-implementation: packaging PRs, generating changelogs, cutting releases.
 
 ### 10. Auto-generated changelog / release notes skill
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-016](../Design/adr/adr-016-changelog-and-release-notes-skill.md)
 
 **Context / trigger:** V1's commit convention (`<verb> <what> (ADR-NNN, #issue)`) makes `git log` highly readable, but there's no way to produce a polished changelog or release notes for stakeholders who don't use git. A maintained commit log would drift from reality; an auto-generated one stays accurate with zero upkeep.
 
@@ -281,9 +291,10 @@ Post-implementation: packaging PRs, generating changelogs, cutting releases.
 
 ### 11. `/release` skill for version tagging and GitHub Releases
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-017](../Design/adr/adr-017-release-skill.md)
 
 **Context / trigger:** The kit has no skills for versioning, releasing, or tagging. Projects built with the kit reach "merge to main" but have no structured path from there to a tagged release with release notes. The `/changelog` skill (also logged) generates the content, but there's nothing to orchestrate the actual release.
 
@@ -310,9 +321,10 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ### 12. `workflow-docs` skill
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-018](../Design/adr/adr-018-workflow-docs-skill.md)
 
 **Context / trigger:** Referenced in `docs/repo-structure.md:88` as the skill that generates `README.md` and `Design/ai-summary.md` for target projects. No source exists in `skills/`, and no GitHub issue tracks it.
 
@@ -330,9 +342,10 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ### 13. Write `docs/claude-code-guide.md`
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-019](../Design/adr/adr-019-claude-code-guide.md)
 
 **Context / trigger:** `docs/install.md:154` references `docs/claude-code-guide.md` as "a later issue" — it's already promised to users reading the install guide but doesn't exist yet.
 
@@ -350,9 +363,10 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ### 14. End-to-end workflow guide doc
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-020](../Design/adr/adr-020-workflow-guide.md)
 
 **Context / trigger:** Users installing the kit can see the pieces (skills, templates, ADRs) but there's no single doc that walks through the full flow the kit creates end-to-end. `docs/install.md:214` already references a planned `docs/workflow-guide.md` ("end-to-end flow from idea to deploy — coming in a later issue"), and `generic-project-workflow.md` at the repo root (~29 KB) looks like source material waiting to be distilled.
 
@@ -380,9 +394,10 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ### 15. Example / starter projects gallery
 
-**Status:** idea
+**Status:** adr-drafted
 **Target:** v-next
 **Captured:** 2026-04-16
+**ADR:** [ADR-021](../Design/adr/adr-021-example-projects.md)
 
 **Context / trigger:** `examples/` currently covers the three PRD intake paths but no full worked projects. New users lack end-to-end references showing the kit in use from install to shipped PR.
 
