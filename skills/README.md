@@ -17,10 +17,10 @@ project-locally (see ADR-001).
 | [`adr-writer/`](adr-writer/SKILL.md) | Draft ADRs from the MVP and key decisions | Issue #7 |
 | [`issue-planner/`](issue-planner/SKILL.md) | Turn MVP + ADRs into a GitHub issue backlog + Project board | Issue #14 |
 | [`prepare-issue/`](prepare-issue/SKILL.md) | Auto-fill an issue prompt from a GitHub issue and linked ADRs | Issue #15 |
-| [`changelog/`](changelog/SKILL.md) | Generate grouped release notes from git history between two refs | Issue #18 |
-| [`workflow-docs/`](workflow-docs/SKILL.md) | Generate README.md and Design/ai-summary.md from project artifacts | Issue #20 |
-| `claude-issue-executor/` | Plan-first, test-alongside execution for each issue | later |
+| [`claude-issue-executor/`](claude-issue-executor/SKILL.md) | Plan-first, test-alongside execution for each issue | Issue #16 |
 | [`pr-review-packager/`](pr-review-packager/SKILL.md) | Package a branch into a PR with filled template, issue and ADR links, and a commit-derived change summary | Issue #17 |
+| [`changelog/`](changelog/SKILL.md) | Generate grouped release notes from git history between two refs | Issue #18 |
 | [`release/`](release/SKILL.md) | Tag a semver release, call `/changelog` for notes, publish a GitHub Release | Issue #19 |
+| [`workflow-docs/`](workflow-docs/SKILL.md) | Generate README.md and Design/ai-summary.md from project artifacts | Issue #20 |
 
 See ADR-001 for why skills live project-locally under `.claude/skills/`.
