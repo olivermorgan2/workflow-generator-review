@@ -237,9 +237,10 @@ matches what you have in hand:
 | A standard PRD | `prd-normalizer` → `prd-to-mvp` | Issue #6, #7 |
 | Mixed notes / custom PRD format | `prd-normalizer` → `prd-to-mvp` | Issue #6, #7 |
 
-Run the chosen skill inside the target project using Claude Code.
-Detailed usage guidance will live in `docs/claude-code-guide.md` (a later
-issue). For now, each skill's own `SKILL.md` is the authoritative spec.
+Run the chosen skill inside the target project using Claude Code. For
+how to invoke skills, use plan mode, and follow the approve-then-implement
+loop, see [`claude-code-guide.md`](claude-code-guide.md). Each skill's
+own `SKILL.md` remains the authoritative spec for its inputs and outputs.
 
 ---
 
