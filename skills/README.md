@@ -19,5 +19,6 @@ project-locally (see ADR-001).
 | `workflow-docs/` | Generate README, CLAUDE.md, and AI summary | later |
 | `claude-issue-executor/` | Plan-first, test-alongside execution for each issue | later |
 | `pr-review-packager/` | Package PR summaries and review artifacts | later |
+| [`release/`](release/SKILL.md) | Tag a semver release, call `/changelog` for notes, publish a GitHub Release | Issue #19 |
 
 See ADR-001 for why skills live project-locally under `.claude/skills/`.
