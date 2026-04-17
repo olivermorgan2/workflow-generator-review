@@ -1,0 +1,291 @@
+---
+name: claude-issue-executor
+description: Drive a disciplined implementation session from a prepared issue prompt — plan-first, branch, incremental commits, tests alongside, evaluation summary
+---
+
+# claude-issue-executor
+
+Run a full implementation session for a single GitHub issue, starting from
+a prepared prompt file. The skill parses the prompt, proposes a plan and
+**blocks for explicit user approval**, creates a feature branch from `main`,
+implements in incremental commits that reference the governing ADR and
+issue number, writes tests alongside code where the project supports them,
+and produces an evaluation summary at the end.
+
+This skill is the enforcement mechanism for the execution model decided
+in [ADR-006](../../Design/adr/adr-006-claude-code-execution-model.md) and
+the orchestration contract decided in
+[ADR-014](../../Design/adr/adr-014-claude-issue-executor-skill.md).
+
+## When to use this skill
+
+- After `/prepare-issue` (ADR-013) has written a prompt file — typically
+  `prompts/issue-NNN-short-title.md`.
+- When starting an implementation session for a single GitHub issue.
+- When the user invokes `/claude-issue-executor <path-to-prompt>`.
+
+If no prompt file exists yet, stop and tell the user to run
+`/prepare-issue` first (or to hand-author a prompt that matches
+`prompts/_template.md`).
+
+## What this skill does not do
+
+- Does not create prompts. That is `/prepare-issue` (ADR-013).
+- Does not create pull requests. That is `/pr-review-packager` (ADR-015).
+  This skill **suggests** `/pr-review-packager` in its final summary but
+  never auto-invokes it.
+- Does not draft, amend, or accept ADRs. ADRs are authored by
+  `adr-writer` and accepted by a human.
+- Does not modify GitHub issues, labels, milestones, or the issue body.
+- Does not duplicate logic from other skills. It is an orchestrator:
+  prompt parsing, plan gate, branching, commits, tests, summary, handoff.
+
+## Invocation contract
+
+```
+/claude-issue-executor <path-to-prompt-file>
+```
+
+- **Argument (optional):** relative or absolute path to a prepared prompt
+  file. Preferred location: `prompts/issue-NNN-short-title.md`. Legacy
+  location (pre-ADR-008, still supported as a fallback): `notes/issueN-prompt.md`.
+- **No argument given:** list candidate prompt files from `prompts/` and,
+  as a fallback, `notes/issue*-prompt.md`. Ask the user which to use.
+  Do nothing else until they answer.
+
+No other flags are defined for v1. Edge-case behaviour (branch exists,
+dirty tree, plan denied) is handled interactively — see the
+**Edge cases** section rather than multiplying flags.
+
+## Inputs
+
+- **Required:** a prepared prompt file containing the sections the skill
+  relies on (see **Prompt validation**).
+- **Required in the environment:** a clean working tree on `main` (or on
+  a branch that tracks `main`). Nothing uncommitted.
+- **Read (not modified):** `CLAUDE.md`, the ADR named in the prompt, and
+  any other files the prompt points at.
+
+## Outputs
+
+- A feature branch created from `main`.
+- A series of focused commits on that branch, each referencing the ADR
+  and issue from the prompt.
+- Tests alongside implementation, where the project has a test runner.
+- An evaluation summary printed at the end of the session.
+
+This skill does **not** push, does **not** open a PR, and does **not**
+merge. Those belong to `/pr-review-packager` and the user's own review.
+
+## Prompt validation
+
+Before doing anything else, read the prompt file and confirm it contains
+the sections the rest of the skill depends on. Required sections, matched
+case-insensitively by heading or leading bold label:
+
+1. **Context** — what project and what this session is about.
+2. **ADR** — the governing ADR, e.g. `Design/adr/adr-NNN-...md`.
+3. **GitHub Issue** — title and number, e.g. `Number: #16`.
+4. **Goal** — what the issue should achieve.
+5. **Requirements** — the work to be done.
+6. **Scope and constraints** (or "Scope") — bounds of the session.
+7. **Instructions for you** (or "Instructions") — the plan-first,
+   commit-incrementally, evaluate-at-the-end directive.
+
+If any required section is missing, **stop**. Report which sections were
+not found and ask the user whether to fix the prompt (`/prepare-issue`
+can regenerate it) or proceed without that section. Do not invent
+missing content.
+
+Also extract two fields for later:
+
+- **ADR number** — the `NNN` in the ADR filename. Used in commit messages.
+- **Issue number** — the `#N` from the GitHub Issue section. Used in
+  commit messages and the branch name.
+
+If either is absent, the prompt is malformed — treat as above.
+
+## Branch naming
+
+Derive the branch name from the prompt filename:
+
+- `prompts/issue-017-pr-review-packager.md` → `pr-review-packager-skill` is
+  one acceptable form; so is `issue-017-pr-review-packager`. Prefer the
+  short, descriptive form that matches the repo convention in
+  [`docs/github-setup.md` section 5](../../docs/github-setup.md#5-branch-naming-and-pull-requests):
+  kebab-case, descriptive, no leading `feature-` or numeric-only names.
+- If the prompt filename already matches repo convention, use it verbatim
+  with any `issue-NNN-` prefix stripped when the short title alone is
+  already distinctive.
+- When in doubt, show the user the proposed branch name in the plan and
+  let them amend it before approval.
+
+Create the branch with `git checkout -b <branch>` from `main`. If the
+user is not on `main`, switch to `main` and pull first — but only after
+confirming the working tree is clean.
+
+## Commit model
+
+- **One logical change per commit.** Do not batch unrelated edits.
+- **Commit message format:**
+  `<verb>(<scope>): <what> (ADR-NNN, #issue)`
+  where `<verb>` is `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, etc.
+  and `<scope>` points at the primary folder touched
+  (`skills`, `docs`, `templates`, etc.).
+- **ADR-NNN and #issue come from the prompt**, not from the current
+  conversation. Do not invent them.
+- **Tests live in the same commit as the code they cover**, not in a
+  separate "add tests" commit (see **Test-alongside**).
+
+Example for this very issue:
+
+```
+feat(skills): add claude-issue-executor skill (ADR-014, #16)
+docs(skills): wire claude-issue-executor into skills/README.md (ADR-014, #16)
+```
+
+## Test-alongside
+
+Detect whether the project has a test runner by checking, in order:
+
+- `package.json` → `scripts.test` (Node/JS/TS projects)
+- `pytest.ini`, `pyproject.toml` with a `[tool.pytest.ini_options]` section
+  (Python)
+- `Cargo.toml` with a `[lib]` or `[[test]]` section (Rust)
+- `go.mod` (Go — `go test ./...` is always available)
+- any file ending in `*test*.*` in a conventional tests folder
+
+If any is present, write tests as part of the logical commit that
+introduces the code they cover. If the project has **no** test runner
+(common for docs-only kits like this one — see this very repo), note
+that in the evaluation summary and rely on documentation-style
+verification instead.
+
+Tests for a prose-only skill (a SKILL.md that contains no runnable code)
+are usually unnecessary; a walk-through in the evaluation summary is the
+accepted substitute.
+
+## The plan gate — how plan-first is enforced
+
+This is the single most important rule of the skill. Plan-first is
+enforced by following this exact sequence every time:
+
+1. Read the prompt file.
+2. Validate it (see **Prompt validation**).
+3. Read `CLAUDE.md` and the ADR referenced in the prompt.
+4. **Produce a step-by-step plan in a single message** that includes:
+   - the branch name you propose to create,
+   - every file you will create or modify, with a one-line reason,
+   - the commit sequence you intend (message + which files land in each),
+   - whether tests will be written and where,
+   - the verification steps you will run at the end.
+5. **Stop.** Do not call any tool that writes to disk, runs git, runs
+   tests, or otherwise mutates state. Wait for the user to answer.
+6. Only proceed once the user replies with an explicit approval — e.g.
+   "yes", "go ahead", "approved", "LGTM, proceed". A clarifying reply
+   ("why are you doing X?") is **not** approval; address the question
+   and re-present the plan.
+7. If the user asks for changes, revise the plan and return to step 4.
+8. If the user denies the plan outright, stop and offer to revise or to
+   hand back control.
+
+Operationally, when operating inside Claude Code: between steps 4 and 6
+the assistant must not invoke Write, Edit, Bash (other than read-only
+commands the user has already authorised), or any other mutating tool.
+The only tool calls allowed between "plan proposed" and "plan approved"
+are read-only ones needed to answer follow-up questions from the user.
+
+This rule is load-bearing. Skipping it violates ADR-006 and defeats the
+purpose of the skill.
+
+## Session protocol — end to end
+
+1. **Parse invocation.** Resolve the prompt path. If no arg was given,
+   list candidates and ask.
+2. **Preflight.** Confirm the working tree is clean. If dirty, stop and
+   ask the user to commit, stash, or discard. Confirm the current branch
+   is `main` or agree with the user to switch.
+3. **Read and validate the prompt.** If malformed, stop and report.
+4. **Read the referenced ADR** and `CLAUDE.md`.
+5. **Propose the plan** (see **The plan gate**).
+6. **Wait for approval.** No edits until explicit yes.
+7. **Create the branch** from `main`.
+8. **Implement, commit incrementally.** Each commit is one logical
+   change with the required message format. Tests land with code.
+9. **Verify.** Run the project's tests if any exist. Run any
+   verification step called out in the prompt's "Evaluation & testing
+   requirements" section.
+10. **Evaluation summary.** Print the final summary (see **Evaluation
+    summary** below).
+11. **Suggest handoff.** Tell the user the next step is
+    `/pr-review-packager` to package a PR. Do not invoke it.
+
+## Evaluation summary
+
+Print a single structured message that covers:
+
+- **What changed** — bulleted list of files created or modified, grouped
+  by purpose.
+- **Commits** — the commit messages in order, with SHAs when known.
+- **Verification performed** — test runner output, build output, or a
+  walk-through if the project has no runnable tests.
+- **Follow-ups** — anything noted during the session that is out of
+  scope for this issue but worth capturing (e.g. "this also enables
+  issue #18"). Do not silently defer requirements that were in scope.
+- **Commands the user should run** to reproduce the verification
+  themselves. Concrete shell lines, not prose.
+- **Next step** — `/pr-review-packager` once the session is reviewed.
+
+The format mirrors the "evaluation summary" step in every
+`notes/issueN-prompt.md` — see those files for reference.
+
+## Edge cases
+
+- **Prompt file not found.** Search `prompts/` and `notes/` for the
+  closest match and ask the user which they meant. Never guess silently.
+- **Prompt file malformed.** Report the missing sections by name and
+  ask whether to fix the prompt or to proceed with explicit user
+  guidance for the gaps.
+- **Working tree dirty on entry.** Refuse to proceed. Do not auto-stash.
+  Ask the user what to do.
+- **Target branch already exists.** Ask whether to (a) switch to the
+  existing branch and continue, (b) pick a new name, or (c) delete the
+  existing one (only with explicit confirmation and only when the user
+  is sure nothing there is needed). Never force-delete silently.
+- **User denies the plan.** Offer to revise. If the user wants to stop
+  entirely, stop — do not keep pushing variants.
+- **Tests fail during implementation.** Stop, report, and ask — do not
+  paper over failing tests to keep the commit cadence.
+- **ADR or issue number missing from the prompt.** Malformed — see
+  **Prompt validation**. Do not substitute a placeholder in commit
+  messages.
+
+## Handoff
+
+On successful completion, the final message suggests:
+
+> Next step: `/pr-review-packager` to draft a pull request from this
+> branch, using the commit history and the governing ADR.
+
+This skill does not invoke `/pr-review-packager` itself. The user opens
+the next session deliberately, preserving a human review checkpoint
+between implementation and PR publication (ADR-015).
+
+## Alignment check
+
+Before finishing the session, confirm:
+
+- [ ] The plan was proposed and explicitly approved before any edits.
+- [ ] A feature branch was created from `main` (not committed to `main`
+  directly).
+- [ ] Every commit message includes `ADR-NNN` and `#issue` from the
+  prompt.
+- [ ] Tests, if applicable to the project, landed with the code.
+- [ ] An evaluation summary was printed.
+- [ ] `/pr-review-packager` was suggested, not auto-invoked.
+
+If any box is unchecked, the skill has drifted — say so in the
+evaluation summary rather than hiding it.
+
+See [`example.md`](example.md) for a worked session driven by
+`prompts/issue-017-pr-review-packager.md`.
