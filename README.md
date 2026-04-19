@@ -13,7 +13,7 @@ of ADRs, GitHub issues, and Claude Code prompts.
 - A small team or consultant that wants a reusable, low-ceremony operating
   system for GitHub-based delivery with Claude Code.
 
-## Who this is **not** for (in v1)
+## Who this is **not** for
 
 - Anyone trying to retrofit this workflow onto an **existing** repository.
 - Teams that need non-GitHub providers (GitLab, Bitbucket) or non-Claude AI
@@ -21,13 +21,12 @@ of ADRs, GitHub issues, and Claude Code prompts.
 - Anyone looking for a hosted UI or a SaaS product — this is a kit you
   install into your own project.
 
-See [ADR-002](Design/adr/adr-002-new-project-only-scope.md) for why v1 is
-new-projects-only and [`docs/install.md`](docs/install.md#what-v1-does-not-support)
-for the full list of non-goals.
+See [`docs/install.md`](docs/install.md#what-this-kit-does-not-support) for the
+full list of non-goals.
 
 ## At a glance
 
-- **New projects only** — v1 will not adapt existing repos.
+- **New projects only** — does not adapt existing repos.
 - **Project-local install** — each new project gets its own copy of the
   skills under `.claude/skills/`. No global install required.
 - **GitHub-first** — issues, labels, milestones, PRs, `main + feature`
@@ -79,7 +78,7 @@ GitHub repo and the local folder.
    ```
 
    Add `--with-docs` if you want the kit's reference docs copied into
-   `docs/workflow-kit/` alongside the project ([ADR-010](Design/adr/adr-010-optional-with-docs-flag.md)).
+   `docs/workflow-kit/` alongside the project.
    See `--help` for the full flag list. The installer is idempotent —
    re-running it on an already-installed project skips existing files.
 
@@ -139,12 +138,11 @@ what lives in the kit versus what gets generated inside a target project.
 
 ## Status
 
-Milestones M1–M5 shipped. v1 is feature-complete for the "new project only"
-scope (see [ADR-002](Design/adr/adr-002-new-project-only-scope.md)); further
-work is tracked in `notes/feature-ideas.md` and as issues under future
-milestones.
+Milestones M1–M5 shipped. The kit is feature-complete for the
+"new project only" scope; further work is tracked in
+`notes/feature-ideas.md` and as issues under future milestones.
 
 ## License
 
-Not yet specified. A `LICENSE` file will be added before v1 is announced
-externally — see `notes/feature-ideas.md` for open questions.
+Not yet specified. A `LICENSE` file will be added before the kit is
+announced externally — see `notes/feature-ideas.md` for open questions.

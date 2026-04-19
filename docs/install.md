@@ -5,7 +5,7 @@ How to install the Claude Code Workflow Kit into a **new** software project.
 > **Before you start:** v1 of the kit is for **new projects only**. It does
 > not adapt or migrate existing repositories. If you want to add the
 > workflow to an existing codebase, this release is not the right fit —
-> see [What v1 does not support](#what-v1-does-not-support) below and
+> see [What this kit does not support](#what-this-kit-does-not-support) below and
 > [ADR-002](../Design/adr/adr-002-new-project-only-scope.md).
 
 The kit uses a **project-local installation model**: each new target
@@ -236,10 +236,9 @@ own `SKILL.md` remains the authoritative spec for its inputs and outputs.
 
 ---
 
-## What v1 does not support
+## What this kit does not support
 
-Per [ADR-002](../Design/adr/adr-002-new-project-only-scope.md) and the
-MVP spec, v1 intentionally does **not** include:
+The kit intentionally does **not** include:
 
 - **Retrofitting existing repositories.** The kit assumes a clean slate.
   Pointing it at an established codebase will not produce useful output.
