@@ -485,6 +485,30 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ---
 
+### 19. Split to public distribution repo at external release
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-04-19
+
+**Context / trigger:** Today the repo is a single public tree containing both user-facing assets (`skills/`, `templates/`, `bin/`, `docs/`, `examples/projects/`, README, CHANGELOG) and development-only artefacts (`Design/adr/`, `notes/`, MVP/build-out plan docs, transcripts). When the kit is ready to be announced externally, users shouldn't have to wade through the development history to find what they install. GitHub has no per-folder visibility, so splitting means two repos. Current plan: flip this repo private during development and publish the clean public repo at external-release time.
+
+**Sketch of the idea:** Keep this repo (`workflow-generator`) private as the full development source of truth. Create a separate public repo (working title `workflow-kit`) containing only the user-facing paths: `skills/`, `templates/`, `bin/`, `docs/`, `examples/projects/`, `README.md`, `CHANGELOG.md`, `LICENSE`. A GitHub Action on tag push in this repo runs a sync job: checks out a fresh tree of the allowed paths, commits to the public repo's `main` with a "Release vX.Y.Z" message, tags it, and pushes. Users clone the public repo; the installer's hard-coded clone path in `README.md` and `docs/install.md` updates to point there. Issues and discussions on the public repo stay public-side; internal planning stays here.
+
+**Options in mind:**
+- **Two repos with a sync Action on tag push** — recommended. One-way flow, clean public history (one commit per release), full private history preserved here.
+- **Subtree split via `git subtree split` / `git-filter-repo`** — preserves some file history in the public repo. More complex; multi-path splits need composition.
+- **Single repo with `.gitattributes export-ignore`** — only affects `git archive` / source-tarball downloads. Files are still visible in the GitHub UI and to anyone who clones. Rejected because it's privacy-by-convention, not enforcement.
+- **Release-asset-only distribution** — attach a tarball to each GitHub Release, repo stays private. Breaks the current clone-based install model.
+
+**Open questions:** Which paths go to the public repo — just the four listed, or also `generic-project-workflow.md` and the ADR index (many projects publish their ADRs deliberately)? How are CHANGELOG entries authored — copied verbatim, or regenerated with public-facing links rewritten? Where do user-filed issues land (public repo, triaged manually into this one)? Does the sync Action publish pre-release tags (alpha/beta), or only stable? Does the public repo accept PRs, or is it output-only with contribution through this repo?
+
+**Consequences to think through:** Easier: users see a pristine, minimal repo; internal ADRs, prompts, feature-ideas, and working notes stay in the development process, not in the distribution. Harder: one more repo to set up, one sync Action to maintain, tag-alignment between repos needs discipline (broken sync = version skew between dev tags and public tags). Maintenance: the sync Action is small (~50 lines) but any change to the public-paths list requires updating it. Ecosystem impact: external issues and stars accrue only on the public repo; this repo's issue tracker stays internal.
+
+**Dependency note:** Blocked by #18 (License) — the public repo needs a license before external release. Interacts with the plugin-distribution future entry — if the kit later ships as a Claude Code plugin, the public repo becomes the plugin source rather than a clone-install target.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.
