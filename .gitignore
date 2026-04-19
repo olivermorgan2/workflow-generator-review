@@ -10,9 +10,6 @@
 .claude/skills/
 .claude/settings.local.json
 
-# Dev-only scaffolding for dogfooding the kit on itself
-.dev/
-
 # Editor / IDE junk
 *.swp
 *.swo

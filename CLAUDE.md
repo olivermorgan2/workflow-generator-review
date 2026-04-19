@@ -47,16 +47,19 @@ skills while developing the kit itself (so `/prepare-issue`, `/release`,
 etc. are invokable in this repo), run once:
 
 ```bash
-.dev/link-skills.sh
+~/dotfiles/claude-config/bin/link-skills
 ```
 
 This symlinks each `skills/<name>/` directory into `.claude/skills/<name>/`.
-Both `.dev/` and `.claude/skills/` are gitignored, so this scaffolding
-never ships. Re-run the script only when the set of skill directories
-changes (add, rename, delete). Edits to a skill's `SKILL.md` are live on
-the next invocation without re-syncing.
+`.claude/skills/` is gitignored, so the symlinks never ship. Re-run the
+script only when the set of skill directories changes (add, rename, delete).
+Edits to a skill's `SKILL.md` are live on the next invocation without
+re-syncing.
 
-See `.dev/README.md` for rationale and mechanics.
+The `link-skills` tool lives in the personal dotfiles repo so it syncs
+across machines; it is intentionally NOT part of the kit. See the
+dogfooding playbook at `~/dotfiles/claude-config/docs/dogfooding-playbook.md`
+for the full methodology (kit dogfooding and app dogfooding).
 
 ## What this file is NOT
 
