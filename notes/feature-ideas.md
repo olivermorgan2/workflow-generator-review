@@ -460,6 +460,31 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ---
 
+### 18. License selection and `LICENSE` file
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-04-19
+
+**Context / trigger:** The repo has no `LICENSE` file and the README currently says "not yet specified" (added 2026-04-19 alongside v2.0.0). GitHub visibly flags missing licenses on the repo homepage, and without one the default copyright applies — downstream users technically cannot redistribute, modify, or fork the kit. For a kit whose whole purpose is to be installed into other projects, this is a soft blocker on external adoption. Separately: target projects scaffolded via the installer also ship without a license, pushing the same problem one layer down.
+
+**Sketch of the idea:** Pick a license for the kit itself, add `LICENSE` at repo root, and update the README to reference it. Consider whether the installer (ADR-009) should optionally scaffold a `LICENSE` into target projects too — either a fixed default (MIT) or a `--license=<spdx>` flag that renders the appropriate template from `templates/licenses/`.
+
+**Options in mind:**
+- **MIT for the kit** — shortest, most permissive, matches most developer-tooling repos. One `LICENSE` file, no template plumbing.
+- **Apache-2.0 for the kit** — permissive + explicit patent grant + NOTICE file convention. Slightly heavier but safer for anything that might ship code rather than docs.
+- **GPL-3.0 for the kit** — copyleft; forces downstream derivatives to stay open. Likely over-scoped for a workflow toolkit.
+- **No license, state explicitly "all rights reserved"** — current behaviour in effect; keep closed until ready.
+- **Add license scaffolding for target projects** — separate decision, can pair with any choice above via `bin/install-workflow-kit --license=MIT` and `templates/licenses/mit.txt` etc.
+
+**Open questions:** MIT or Apache-2.0 for the kit itself? Should the installer scaffold a `LICENSE` into target projects at all, or leave that choice to the user? If it does, is there a default, or is `--license` required? Does the kit-level license choice constrain target-project license choices (it shouldn't for permissive licenses, but worth confirming)? Where does copyright attribution live — a single author line or a `CONTRIBUTORS` file?
+
+**Consequences to think through:** Easier: unblocks external sharing and adoption; removes GitHub's "missing license" banner; answers a question every serious user will ask within minutes of opening the repo. Harder: once chosen and shipped, changing the license later requires coordinating with anyone who has redistributed the kit. Maintenance: near-zero for the kit itself (one file); if installer scaffolds target licenses, that's one template per supported license to keep current.
+
+**Dependency note:** Independent of other v-next entries. Should land before any public announcement or external contribution campaign. Interacts with #17 (Strong README template) — the README License section is already placeholder-linked to this entry.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.
