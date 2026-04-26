@@ -79,6 +79,14 @@ names.
    mentions platform, stack, or timing hints; otherwise mark `[TBD]`.
 5. Run the self-check and write the file.
 
+If the input was authored from
+[`templates/prd-template.md`](../../templates/prd-template.md) — whether
+filled by hand or via an external LLM — its 11 sections already match
+this skill's canonical fields one-to-one (ADR-027). Step 1 is a
+pass-through; step 2 may not be needed; the remaining steps confirm
+content and write the file. This is the fastest path through the
+normaliser.
+
 ## Intake protocol — custom PRD path
 
 Use this path when the input does not match a conventional PRD shape.

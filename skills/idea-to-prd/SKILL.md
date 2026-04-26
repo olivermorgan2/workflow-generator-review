@@ -17,6 +17,14 @@ straight to `prd-normalizer`. If the user has custom planning notes in
 their own format, also skip this skill — `prd-normalizer`'s custom path
 handles that case directly.
 
+If the user wants to draft a PRD offline before involving Claude Code —
+by hand, or by giving an external LLM a canonical shape to fill — point
+them at [`templates/prd-template.md`](../../templates/prd-template.md).
+That template's 11 sections match `prd-normalizer`'s canonical fields
+one-to-one (ADR-027), so a faithfully-filled file flows through
+`prd-normalizer` as a pass-through. Use this skill only when there is
+no draft PRD at all.
+
 This skill exists to cover the "no PRD yet" path from
 [ADR-003](../../Design/adr/adr-003-prd-intake-model.md).
 

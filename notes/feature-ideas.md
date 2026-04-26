@@ -415,9 +415,10 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ### 16. PRD template for external-LLM drafting
 
-**Status:** ready-for-adr
+**Status:** shipped
 **Target:** v-next
 **Captured:** 2026-04-17
+**ADR:** [ADR-027](../Design/adr/adr-027-prd-template.md)
 
 **Context / trigger:** `templates/` ships `mvp-template.md`, `build-out-plan-template.md`, `adr-template.md`, `issue-template.md`, `pr-template.md`, `claude-md-template.md`, `ai-summary-template.md`, `readme-template.md` — but no `prd-template.md`. Users who draft PRDs in external LLMs (Perplexity, ChatGPT) have no paste-in skeleton matching the kit's canonical 11-field shape from `skills/prd-normalizer/SKILL.md:46-63`. Only `examples/standard-prd-example.md` hints at shape, and it's an 8-section illustrative example rather than a reusable template. A provisional `templates/prd-template.md` was added locally to unblock drafting today, ahead of formalization — this entry records the work that's still owed.
 
