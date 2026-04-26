@@ -43,6 +43,7 @@ fences is preserved.
 | [ADR-026](adr-026-kit-versioning-policy.md) | Versioning policy for the kit | accepted |
 | [ADR-027](adr-027-prd-template.md) | Ship a PRD template for offline / external-LLM drafting | accepted |
 | [ADR-028](adr-028-workflow-agnostic-framing.md) | Reframe the kit as workflow-agnostic, not software-only | accepted |
+| [ADR-029](adr-029-per-project-remote-install.md) | Recommend per-project remote install over local-clone-once | accepted |
 
 <!-- adr-index:end -->
 
