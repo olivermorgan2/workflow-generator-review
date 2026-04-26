@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# bootstrap-workflow-kit — fetch the Claude Code Workflow Kit at a pinned
+# version and run its installer against the current (or specified) target
+# project. Implements ADR-029 (per-project remote install).
+#
+# Usage:
+#   # Most common: scaffold the current directory into a kit-shaped target.
+#   bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.2.0/bootstrap-workflow-kit) \
+#     --project-name=my-project
+#
+#   # Or: download, inspect, then run.
+#   gh release download v3.2.0 -p bootstrap-workflow-kit \
+#     -R olivermorgan2/workflow-generator
+#   chmod +x bootstrap-workflow-kit
+#   ./bootstrap-workflow-kit --project-name=my-project
+#
+# Environment variables:
+#   WORKFLOW_KIT_VERSION   Tag to fetch (e.g. v3.2.0). If unset, resolves
+#                          to the latest tag via `gh release view` (or
+#                          `git ls-remote --tags --sort=-v:refname` as
+#                          fallback).
+#   WORKFLOW_KIT_REPO      Source repo (default: olivermorgan2/workflow-generator).
+#                          Override for forks.
+#
+# Behaviour:
+#   1. Resolve target version (env var, then "latest").
+#   2. Make a temp directory; trap cleanup on exit.
+#   3. Fetch the kit at that version (gh repo clone preferred; git clone
+#      fallback).
+#   4. Verify bin/install-workflow-kit is present in the fetched tree.
+#   5. Forward all CLI args to bin/install-workflow-kit.
+#   6. Cleanup runs whether the installer succeeded or failed.
+#
+# Exit codes: whatever the installer returns. The bootstrap itself exits
+# non-zero if the fetch fails or the installer is missing from the tree.
+
+set -euo pipefail
+
+REPO="${WORKFLOW_KIT_REPO:-olivermorgan2/workflow-generator}"
+VERSION="${WORKFLOW_KIT_VERSION:-}"
+
+log() { printf '[bootstrap-workflow-kit] %s\n' "$*" >&2; }
+err() { printf '[bootstrap-workflow-kit] error: %s\n' "$*" >&2; }
+
+# Resolve the version to fetch. Prefer the env var; otherwise try gh; then
+# fall back to git ls-remote.
+resolve_version() {
+  if [ -n "$VERSION" ]; then
+    printf '%s' "$VERSION"
+    return 0
+  fi
+  if command -v gh >/dev/null 2>&1; then
+    local tag
+    tag="$(gh release view --repo "$REPO" --json tagName --jq '.tagName' 2>/dev/null || true)"
+    if [ -n "$tag" ]; then
+      printf '%s' "$tag"
+      return 0
+    fi
+  fi
+  # Fallback: highest semver-shaped tag from the remote.
+  local tag
+  tag="$(git ls-remote --tags --refs --sort=-v:refname \
+    "https://github.com/$REPO.git" 2>/dev/null \
+    | awk '{print $2}' | sed 's|refs/tags/||' | head -1 || true)"
+  if [ -n "$tag" ]; then
+    printf '%s' "$tag"
+    return 0
+  fi
+  err "could not resolve a version for $REPO. Set WORKFLOW_KIT_VERSION=vX.Y.Z."
+  return 1
+}
+
+VERSION="$(resolve_version)"
+log "fetching $REPO @ $VERSION"
+
+TMPDIR="$(mktemp -d -t workflow-kit.XXXXXX)"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Prefer gh for the clone (uses the user's authenticated session); fall
+# back to plain git over HTTPS.
+if command -v gh >/dev/null 2>&1; then
+  if ! gh repo clone "$REPO" "$TMPDIR/kit" -- --depth=1 --branch="$VERSION" >/dev/null 2>&1; then
+    log "gh repo clone failed; trying git clone over HTTPS"
+    git clone --depth=1 --branch="$VERSION" "https://github.com/$REPO.git" "$TMPDIR/kit"
+  fi
+else
+  git clone --depth=1 --branch="$VERSION" "https://github.com/$REPO.git" "$TMPDIR/kit"
+fi
+
+INSTALLER="$TMPDIR/kit/bin/install-workflow-kit"
+if [ ! -x "$INSTALLER" ]; then
+  err "installer not found or not executable in fetched tree: $INSTALLER"
+  exit 1
+fi
+
+log "running installer with args: $*"
+"$INSTALLER" "$@"
