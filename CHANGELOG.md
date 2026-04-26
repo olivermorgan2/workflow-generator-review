@@ -2,6 +2,42 @@
 
 All notable changes to this project.
 
+## v3.0.0 — kit hygiene and licensing (2026-04-26)
+
+Range: `v2.0.0..v3.0.0`
+
+This is a **MAJOR** release per [ADR-026](Design/adr/adr-026-kit-versioning-policy.md): renames a placeholder and parser-relevant heading in the MVP scoping framework.
+
+### Breaking changes
+
+- Rename MVP scoping headings: `### In v1` / `### Not in v1` → `### In scope` / `### Out of scope` across the kit's templates, skills, examples, and worked projects ([`726ddac`](https://github.com/olivermorgan2/workflow-generator/commit/726ddac), [#28](https://github.com/olivermorgan2/workflow-generator/issues/28), [ADR-024](Design/adr/adr-024-mvp-vocabulary-versus-v1.md)).
+- Rename README-template placeholders: `{{IN_V1_BULLETS}}` → `{{IN_SCOPE_BULLETS}}` and `{{NOT_IN_V1_BULLETS}}` → `{{OUT_OF_SCOPE_BULLETS}}` ([`726ddac`](https://github.com/olivermorgan2/workflow-generator/commit/726ddac), [#28](https://github.com/olivermorgan2/workflow-generator/issues/28), [ADR-024](Design/adr/adr-024-mvp-vocabulary-versus-v1.md)).
+- **Migration:** projects scaffolded from v2.0.0 with hand-rolled local overrides of `templates/readme-template.md` need the placeholder rename. Projects that have a `Design/mvp.md` filled with `### In v1` / `### Not in v1` headings need the heading rename for `workflow-docs` and `issue-planner` to parse them correctly. No backwards-compat shim — the kit had not shipped externally before v3.
+
+### Features
+
+- Auto-sync the ADR index in `Design/adr/README.md` via `bin/sync-adr-index`. Marker fences (`<!-- adr-index:start -->` / `<!-- adr-index:end -->`) wrap the generated table; editorial text outside is preserved. Wired into `adr-writer`, `claude-issue-executor`, `pr-review-packager`, and `release` skills. Installer copies the script into target projects' `.claude/bin/` ([`cbca260`](https://github.com/olivermorgan2/workflow-generator/commit/cbca260), [#27](https://github.com/olivermorgan2/workflow-generator/issues/27), [ADR-023](Design/adr/adr-023-auto-sync-adr-index.md)).
+
+### Decisions and policy
+
+- License the kit under **MIT** with copyright `(c) 2026 Oliver Morgan`. The kit's MIT license covers the kit itself (templates, skills, scripts, docs); user-built projects (their `Design/mvp.md`, source code, etc.) are the user's own work and not subject to the kit's license. Optional `--license=mit --license-holder=NAME` installer flag documented for users who want a starter LICENSE in their target project ([`8b16d5a`](https://github.com/olivermorgan2/workflow-generator/commit/8b16d5a), [#29](https://github.com/olivermorgan2/workflow-generator/issues/29), [ADR-025](Design/adr/adr-025-license.md)).
+- Document the kit's semver versioning policy. Explicit MAJOR/MINOR/PATCH classifications for a templates-and-skills "API". The v3 release validates against this policy as MAJOR ([`3397070`](https://github.com/olivermorgan2/workflow-generator/commit/3397070), [#30](https://github.com/olivermorgan2/workflow-generator/issues/30), [ADR-026](Design/adr/adr-026-kit-versioning-policy.md)).
+- Drop kit-self "v1" version qualifiers from kit-scope decisions. Supersession is now the single mechanism for scope changes; kit-scope statements stay valid across releases. ADR-002 superseded by ADR-022 ([`6a1b28e`](https://github.com/olivermorgan2/workflow-generator/commit/6a1b28e), [#26](https://github.com/olivermorgan2/workflow-generator/issues/26), [ADR-022](Design/adr/adr-022-drop-version-qualifiers-from-kit-scope.md)).
+
+### Docs
+
+- Earlier removal of "v1" qualifiers from user-facing docs and ADR references ([`813939a`](https://github.com/olivermorgan2/workflow-generator/commit/813939a)).
+- Add v-next feature-ideas entries: license selection (#18) and split to public distribution repo (#19) ([`0e0219b`](https://github.com/olivermorgan2/workflow-generator/commit/0e0219b), [`b749fc7`](https://github.com/olivermorgan2/workflow-generator/commit/b749fc7)).
+
+### Process
+
+- Retroactive audit trail for the v3 batch: 5 GitHub issues (#26-#30) and 5 canonical session-brief prompts under `prompts/`. Going forward every kit change goes through the formal `ADR → issue → prompt → executor` flow regardless of size ([`ca6af6d`](https://github.com/olivermorgan2/workflow-generator/commit/ca6af6d)).
+
+### Chores
+
+- Move dogfooding `link-skills` tool to dotfiles repo; document the dogfooding convention in `CLAUDE.md`; stop tracking `.obsidian/` ([`40857ab`](https://github.com/olivermorgan2/workflow-generator/commit/40857ab), [`147aaa3`](https://github.com/olivermorgan2/workflow-generator/commit/147aaa3), [`28f2277`](https://github.com/olivermorgan2/workflow-generator/commit/28f2277)).
+- Add CHANGELOG.md for the v1→v2 range ([`c542fc7`](https://github.com/olivermorgan2/workflow-generator/commit/c542fc7)).
+
 ## v2.0.0 — v-next feature set (2026-04-19)
 
 Range: `v1.0.0..v2.0.0`
