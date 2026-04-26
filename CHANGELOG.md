@@ -2,6 +2,31 @@
 
 All notable changes to this project.
 
+## v3.2.0 — workflow-agnostic framing, remote install, license flag (2026-04-26)
+
+Range: `v3.1.0..v3.2.0`
+
+**MINOR** per [ADR-026](Design/adr/adr-026-kit-versioning-policy.md): three additive changes — new framing in docs, new install path, new installer flag. No breaking changes.
+
+### Features
+
+- **Per-project remote install** ([ADR-029](Design/adr/adr-029-per-project-remote-install.md), [#36](https://github.com/olivermorgan2/workflow-generator/issues/36)). End users no longer need a long-lived local kit clone. New [`bin/bootstrap-workflow-kit`](bin/bootstrap-workflow-kit) script (~95 lines) fetches the kit at a pinned version from GitHub, runs the installer, and discards the temp copy. `gh repo clone` preferred, plain `git clone` fallback. The script is uploaded as a release asset on every tagged release ([`3788628`](https://github.com/olivermorgan2/workflow-generator/commit/3788628), [`2dc6f02`](https://github.com/olivermorgan2/workflow-generator/commit/2dc6f02), [`300ea79`](https://github.com/olivermorgan2/workflow-generator/commit/300ea79)).
+- **Installer `--license=mit` flag** ([ADR-030](Design/adr/adr-030-installer-license-flag.md), [#38](https://github.com/olivermorgan2/workflow-generator/issues/38)). Closes the implementation gap from ADR-025: scaffolds a starter MIT `LICENSE` in the target with `{{YEAR}}` and `{{COPYRIGHT_HOLDER}}` substituted. New flag `--license-holder=NAME` (falls back to `--project-name`, then target basename). Default unchanged: no LICENSE auto-scaffolded. Template at [`templates/licenses/mit.txt`](templates/licenses/mit.txt) keeps the door open for future SPDX identifiers ([`b263272`](https://github.com/olivermorgan2/workflow-generator/commit/b263272), [`4b2519d`](https://github.com/olivermorgan2/workflow-generator/commit/4b2519d)).
+
+### Decisions and policy
+
+- **Reframe the kit as workflow-agnostic** ([ADR-028](Design/adr/adr-028-workflow-agnostic-framing.md), [#34](https://github.com/olivermorgan2/workflow-generator/issues/34)). The kit's primitives (PRD → MVP → ADRs → issues → executor → PR) work for any structured project — research papers, technical writing, curriculum, content, design systems, internal-policy docs — not only software. The kit assumes git, GitHub, and Claude Code; it does not assume code, a specific language, a test runner, or a deployment system. README rewritten to match. No skill, template, or filename renamed ([`a4639aa`](https://github.com/olivermorgan2/workflow-generator/commit/a4639aa), [`4774c16`](https://github.com/olivermorgan2/workflow-generator/commit/4774c16)).
+
+### Docs
+
+- README rewrite picks up several quality issues caught during the framing pass: new "What this is good for" section with non-software examples; explicit assumptions and non-assumptions; new "Ongoing development" section explaining the kit's role beyond initial scaffolding (ADR drafting, index auto-sync, plan-first issue execution, PR packaging, releases, doc regeneration); "skip if already done" note on one-time setup; Status section de-staled (now points at the releases page and ADR-026's versioning policy instead of the original M1–M5 build-out plan).
+- `docs/install.md` Section 3 restructured into three paths: 3A bootstrap install (recommended for users), 3B explicit fetch alternative (transparent three-line `gh repo clone` form), 3C manual install. New "Contributor / kit-developer setup" section near the end for people working on the kit itself.
+- `skills/release/SKILL.md` execution sequence: new step uploads `bin/bootstrap-workflow-kit` as a release asset on every tagged release, so the README's `bash <(curl …)` one-liner resolves.
+
+### Process
+
+- Three issues (#34, #36, #38), three matching session-brief prompts under `prompts/`, three feature branches, three PRs (#35, #37, #39), all merged to `main` in sequence per the formal flow established in v3.0.0.
+
 ## v3.1.0 — PRD template for offline drafting (2026-04-26)
 
 Range: `v3.0.0..v3.1.0`
