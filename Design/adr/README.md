@@ -41,6 +41,7 @@ fences is preserved.
 | [ADR-024](adr-024-mvp-vocabulary-versus-v1.md) | MVP scoping vocabulary — neutral "In scope / Out of scope" headings | accepted |
 | [ADR-025](adr-025-license.md) | License the kit under MIT | accepted |
 | [ADR-026](adr-026-kit-versioning-policy.md) | Versioning policy for the kit | accepted |
+| [ADR-027](adr-027-prd-template.md) | Ship a PRD template for offline / external-LLM drafting | accepted |
 
 <!-- adr-index:end -->
 
