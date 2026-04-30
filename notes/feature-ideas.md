@@ -561,6 +561,210 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ---
 
+### 22. More detailed planning workflow
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-031](../Design/adr/adr-031-deeper-planning-workflow.md)
+
+**Context / trigger:** The current planning chain (`idea-to-prd` → `prd-normalizer` → `prd-to-mvp` → `adr-writer` → `issue-planner`) produces a working backlog quickly, but for non-trivial projects the depth of planning between "MVP scoped" and "issues created" is thin. There's no structured place for: deeper requirements decomposition, risk/assumption logs, sequencing rationale beyond a flat build-out plan, or a research/spike phase before ADRs are drafted. A reference repo will be supplied with patterns worth borrowing.
+
+**Sketch of the idea:** Introduce an optional, deeper planning layer between MVP scoping and ADR drafting. Possible artefacts: a structured planning doc (requirements, risks, assumptions, sequencing), a research/spike skill that captures findings before they harden into ADRs, and a richer build-out plan format that can express phased delivery (see #23). Skill(s) would be opt-in for larger projects so small ones still get the lightweight current flow.
+
+**Options in mind:**
+- **New `/planning` skill that produces a `Design/planning.md`** sitting between `mvp.md` and `adr-writer` — captures requirements decomposition, risks, assumptions, open questions, and sequencing rationale.
+- **Extend `prd-to-mvp`** to optionally emit a deeper planning section rather than a separate skill — fewer skills, but conflates two concerns.
+- **A research/spike skill** that produces `Design/spikes/NNN-topic.md` for areas needing investigation before an ADR can be written.
+- **Adopt patterns from a reference repo** the user will supply — defer specifics until reviewed.
+
+**Open questions:** What's the canonical artefact name and shape — single `planning.md` or a small directory? Does it replace, augment, or live alongside `build-out-plan.md`? At what project size does the extra step pay for itself? Should `issue-planner` learn to read it, or stay sourced from `mvp.md` + `build-out-plan.md` only? Which patterns from the reference repo are worth importing wholesale vs adapting?
+
+**Consequences to think through:** Easier — large projects get a structured gap-filler between scoping and execution; risks/assumptions are first-class instead of buried in ADR context; spikes have a home. Harder — one more optional artefact and skill to teach; risk of process bloat for small projects; must stay opt-in. Maintenance — templates and skills have to stay aligned with whatever planning shape is chosen; downstream skills (`adr-writer`, `issue-planner`) may need to read the new artefact.
+
+**Dependency note:** Pairs naturally with #23 (implementation phases) — phased delivery is one of the things a deeper planning layer should be able to express. Reference repo to be supplied; review before committing to a shape.
+
+---
+
+### 23. Implementation phases in PRD review and planning
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-032](../Design/adr/adr-032-implementation-phases.md)
+
+**Context / trigger:** Today's flow treats the MVP as a single scope cut: everything is either `In scope` or `Out of scope`, and `build-out-plan.md` is a flat list of work. For large projects, that's too coarse — useful work often falls into multiple ordered phases (e.g. foundation → core feature → polish → scale), each potentially with its own ADRs and acceptance criteria. There's no first-class place to express "this is in scope, but it's phase 2, not phase 1," and `issue-planner` has nothing to key milestones off beyond the flat plan.
+
+**Sketch of the idea:** Add explicit implementation-phase structure to the PRD-review and planning artefacts. `prd-to-mvp` (or a new planning skill, see #22) would produce a phased build-out plan: each phase has a name, goal, scope bullets, the ADRs it depends on, and an exit criterion. ADRs can be tagged with the phase they belong to, so `adr-writer` and the index know which phase a decision serves. `issue-planner` reads phases and creates GitHub milestones (one per phase), assigning issues accordingly. Small projects keep using a single implicit phase — the structure is opt-in via a `--phases` flag or by the user filling phase headings in the template.
+
+**Options in mind:**
+- **Phases in `build-out-plan.md`** — extend the existing template with `## Phase N: <name>` sections; least disruption, reuses the artefact users already know.
+- **Separate `Design/phases.md`** — phases as a first-class doc; cleaner separation but adds another file.
+- **Phases as a field on ADRs and issues only** — no new artefact, just metadata; lightest, but loses the narrative "what each phase is for."
+- **Phases captured during PRD review** (in `prd-normalizer` / `prd-to-mvp`) so they're decided early rather than retrofitted onto the build-out plan.
+
+**Open questions:** Where do phases live canonically — PRD, MVP doc, build-out plan, or a new file? Are phases strictly ordered or can they overlap? Should each phase produce its own release (ties to `/release` and the changelog)? How does this interact with GitHub milestones (one milestone per phase = recommended starting point)? Does `workflow-docs` surface phases in the generated README/roadmap section?
+
+**Consequences to think through:** Easier — large projects get an honest delivery plan with explicit gates; ADRs and issues inherit phase context for traceability; release planning has a natural unit. Harder — more shape to learn for users with small projects (mitigation: opt-in / single-phase default); existing skills (`prd-to-mvp`, `issue-planner`, `workflow-docs`, `release`) all need phase-awareness; example projects need a phased version. Maintenance — phase metadata has to stay consistent across PRD, plan, ADRs, issues, milestones; drift between them silently breaks the traceability chain.
+
+**Dependency note:** Pairs with #22 (deeper planning workflow) — phases are a likely output of that planning layer. Touches `prd-to-mvp`, `adr-writer`, `issue-planner`, `workflow-docs`, and `/release`. Decide alongside #22 so the artefact shape is settled before skills learn to read it.
+
+---
+
+### 24. `discuss-phase` style clarification step before ADRs
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-033](../Design/adr/adr-033-clarify-step.md)
+
+**Context / trigger:** Inspired by the GSD project's [`discuss-phase`](https://github.com/gsd-build/get-shit-done/blob/main/commands/gsd/discuss-phase.md) command, which surfaces "gray areas" — undecided implementation questions — before the planner runs, so downstream agents don't stall on ambiguity. Today our kit jumps from MVP scoping straight to `adr-writer`, which means ambiguity gets resolved either inside ADR drafts (mixing decisions with discovery) or during issue execution (too late, costs a session). A focused clarification step would catch the gray areas earlier.
+
+**Sketch of the idea:** A `/clarify` (or `/discuss-scope`) skill that reads the current `Design/prd-normalized.md` and `Design/mvp.md`, scouts the codebase (if any), and surfaces a checklist of unresolved implementation questions for user selection and deep-dive resolution. Output is appended to a `Design/decisions.md` (or per-phase `Design/phases/N-context.md` if #23 lands) capturing settled decisions in a form ADR-writer and issue-planner can consume without re-asking. Skips areas already locked by accepted ADRs.
+
+**Options in mind:**
+- **New `/clarify` skill** that produces `Design/decisions.md`, run between `prd-to-mvp` and `adr-writer` — recommended, narrow scope, opt-in.
+- **Extend `prd-to-mvp`** to emit a clarification section — fewer skills but conflates scoping with decision capture.
+- **Per-phase clarification** tied to #23, producing `Design/phases/N-context.md` per phase — more structured but blocked on the phase shape.
+- **Do nothing** — keep relying on ADRs to surface ambiguity. Cheap but leaves the gap.
+
+**Open questions:** Does this artefact graduate into ADRs once a decision is hardened, or stay as standing context? How does it interact with the existing ADR supersession model — clarifications are below ADR-weight by design? Should it be re-runnable to add gray areas as they're discovered mid-project, or one-shot per planning round?
+
+**Consequences to think through:** Easier — ADRs stay decision-only; planner and executor have a single place to look for "what was settled informally"; reduces context-window pressure during execution. Harder — one more artefact and skill; risk of duplication with ADRs if the line isn't drawn cleanly. Maintenance — small: append-only doc, no parser dependencies.
+
+**Dependency note:** Stands alone; complements #22 (deeper planning) and #23 (phases) but doesn't depend on either. Best landed before #22 so the deeper-planning skill can build on a clarified scope.
+
+---
+
+### 25. Plan-checker quality gate for ADRs and issue prompts
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-034](../Design/adr/adr-034-plan-checker.md)
+
+**Context / trigger:** Inspired by GSD's [`gsd-plan-checker`](https://github.com/gsd-build/get-shit-done/blob/main/agents/gsd-plan-checker.md) agent, which validates a phase plan on 8 dimensions (atomicity, requirements coverage, dependencies, context fit, etc.) and iterates up to 3 times until pass. Our kit produces ADRs (via `adr-writer`) and issue prompts (via `prepare-issue`), but neither has a structured quality check before they're accepted. Bad ADRs and thin prompts are caught only at execution time, when the cost of fixing them is highest.
+
+**Sketch of the idea:** A `/check-plan` skill (or a `--check` flag on `adr-writer` / `prepare-issue`) that runs a checklist against the artefact: ADR has clear context/decision/consequences, references the right ADRs, doesn't conflict with accepted ones; issue prompt has acceptance criteria, links the right ADRs, fits the build-out plan phase, scope is single-PR-sized. Returns a pass/fail with specific revisions needed. Iterates with the user (or autonomously, capped at 3 rounds) until pass.
+
+**Options in mind:**
+- **Standalone `/check-plan` skill** invoked by users or chained from `adr-writer` and `prepare-issue` — recommended, reusable.
+- **Inline check inside each producing skill** — simpler call site, but couples the checker to each producer.
+- **Two checkers** (one for ADRs, one for prompts) — more focused criteria but doubles the surface.
+- **Linter-style script** instead of a skill — fast, deterministic on structural rules, but can't reason about content quality.
+
+**Open questions:** What's the right dimension list for ADRs vs prompts (GSD's 8-dim list is plan-specific)? How many iteration rounds before giving up? Should the checker block commit/PR if it fails, or just warn? Where do failed-and-revised drafts live — overwrite or version?
+
+**Consequences to think through:** Easier — fewer execution-time surprises; ADR/prompt quality stops depending on the author's discipline; new kit users get scaffolding-grade quality from day one. Harder — slower drafting loop (mitigation: cap iterations, allow `--skip-check`); checklist drift if ADR/prompt templates evolve without updating the checker. Maintenance — checklist criteria need a source of truth that ages with the templates.
+
+**Dependency note:** Hooks into `adr-writer` and `prepare-issue`. Independent of #22/#23 but pairs naturally — phased plans (#23) are obvious targets for a checker.
+
+---
+
+### 26. `STATE.md` and session-continuity artefacts for long projects
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-035](../Design/adr/adr-035-state-md-session-continuity.md)
+
+**Context / trigger:** Inspired by GSD's `STATE.md` (current position: which phase, plans completed, blockers), `HANDOFF.json`, and `continue-here.md` artefacts. Today our kit relies entirely on git state, GitHub issue status, and the prompt files in `prompts/` to convey "where are we?" That's enough for a fresh session on a single issue, but for projects spanning many issues and phases, it leaves the user (and any new Claude session) reconstructing context from scratch every time. No cross-session memory beyond what's in git.
+
+**Sketch of the idea:** Ship a small `Design/state.md` (or `notes/state.md`) that captures: current phase (if #23 lands), in-flight issues, recently completed work, known blockers, and a "continue here" pointer to the next prompt. Updated by `/prepare-issue` (sets the in-flight issue), `claude-issue-executor` (marks progress), and `pr-review-packager` (closes out an issue). A companion `/resume` skill reads it and briefs the next session. Optional `/pause` skill writes a richer handoff for context-window-exhausting sessions.
+
+**Options in mind:**
+- **Single `Design/state.md` updated by existing skills** — recommended, lightweight, reuses skills already in the chain.
+- **Standalone `/resume` and `/pause` skills** with no shared state file — simpler but loses the cross-skill traceability.
+- **Per-issue state in `prompts/issue-NNN-state.md`** — granular but fragmented; harder to see "the project's overall position."
+- **Do nothing** — keep relying on git + issue board. Cheap but limits the kit's usefulness on multi-month projects.
+
+**Open questions:** Does `state.md` get committed (audit trail) or gitignored (per-developer scratchpad)? How does it stay in sync if multiple sessions touch it? Is this redundant with GitHub Projects (#6) once a board exists? What's the minimum field set — phase + in-flight issue + last-PR is probably enough.
+
+**Consequences to think through:** Easier — fresh sessions catch up in seconds, not minutes; project status visible at a glance without `gh` calls; pause/resume across context resets has a clean home. Harder — drift if updates aren't enforced; risk of becoming a stale mirror of GitHub. Maintenance — small if append-only; bigger if it tries to be a single source of truth.
+
+**Dependency note:** Touches `prepare-issue`, `claude-issue-executor`, `pr-review-packager`. Pairs with #23 (phases) — `state.md` becomes much more useful when there's phase context to track. Could be a thin v0 (just current-issue + last-completed) before #23 lands, then enriched.
+
+---
+
+### 27. Granularity / density control for phased plans
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-036](../Design/adr/adr-036-granularity-control.md)
+
+**Context / trigger:** Inspired by GSD's `granularity` setting (`coarse` 3-5 phases, `standard` 5-8, `fine` 8-12) on `new-project`. Without an explicit knob, phase decomposition becomes a judgment call that varies project-to-project, making example projects and the workflow guide harder to write consistently. A small modifier on #23 (implementation phases) lets users dial the planning depth to match project size.
+
+**Sketch of the idea:** When #23 lands, give `prd-to-mvp` (or the deeper planning skill from #22) a `--granularity={coarse|standard|fine}` flag that targets phase count. `coarse` for small projects (one or two phases is fine), `standard` for typical multi-month builds, `fine` for large scope where each phase wants its own milestone. Default: `standard`. The choice is recorded in `build-out-plan.md` so re-runs and downstream skills are consistent.
+
+**Options in mind:**
+- **Three-tier `--granularity` flag** — recommended, matches GSD, easy to teach.
+- **Free-form `--phases=N`** — exact control but harder to recommend defaults.
+- **Auto-pick from project size** (e.g. issue count estimate) — clever but unreliable on the first pass.
+- **No knob** — let the user shape phases manually after seeing the default. Simplest; maybe sufficient.
+
+**Open questions:** Does granularity also affect issue density per phase (more phases = fewer issues each)? Is the right default different for software vs non-software projects (the kit is workflow-agnostic per ADR-028)? Does this need its own ADR or fold into #23's?
+
+**Consequences to think through:** Easier — example projects and the workflow guide can prescribe defaults; users get sane starting points without designing the phase shape themselves. Harder — one more option to document; risk of users tuning granularity instead of fixing real scope issues. Maintenance — minimal; just a parameter passed through skills.
+
+**Dependency note:** Modifier on #23 (implementation phases). Lands as a follow-up, not a blocker. Could be deferred entirely if #23 ships with a single sensible default.
+
+---
+
+### 28. Milestone lifecycle commands (audit, summary, complete)
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-037](../Design/adr/adr-037-milestone-lifecycle.md)
+
+**Context / trigger:** Inspired by GSD's `audit-milestone`, `milestone-summary`, and `complete-milestone` commands, which formalize the boundary between phases and treat a milestone as a first-class delivery unit. Our kit's closest analogue is `/release`, but a release covers a tag-and-publish step, not the wider "did we actually finish what this milestone promised?" check. If #23 (phases) lands, milestones become the natural multi-phase grouping — and need lifecycle ops of their own.
+
+**Sketch of the idea:** Three small skills layered on top of #23: `/audit-milestone` (verifies all phases in the milestone are complete, all issues closed, all ADRs referenced have linked PRs); `/milestone-summary` (generates a milestone retrospective: what shipped, ADRs adopted, lessons learned, deferred work); `/complete-milestone` (closes the milestone, archives the milestone-scoped state, optionally invokes `/release`). Acts as the bridge between phase-level execution and project-level releases.
+
+**Options in mind:**
+- **Three discrete skills** as above — recommended; each is small and composable.
+- **Single `/finish-milestone` skill** that does audit + summary + complete in sequence — fewer commands but less composable.
+- **Fold into `/release`** — simplest but conflates "milestone done" with "release tagged" (they may differ — e.g. multiple milestones per release).
+- **Manual checklist in the workflow guide** — no automation, just docs. Cheap but abandons the kit's automation principle.
+
+**Open questions:** Is one milestone == one release the default, or are they decoupled? Where does the milestone summary live — `Design/milestones/N-summary.md`, the GitHub milestone description, or both? Does `/audit-milestone` block `/complete-milestone` on failure, or just warn?
+
+**Consequences to think through:** Easier — large projects get visible delivery checkpoints; retrospectives become routine artefact, not a manual exercise; release notes have richer source material. Harder — three more skills to maintain; only valuable if #23 (phases) and milestone groupings actually exist. Maintenance — tightly coupled to whatever milestone shape #23 settles on.
+
+**Dependency note:** Depends on #23 (implementation phases) for the milestone concept. Pairs with `/release` (no overlap; `/release` cuts the tag, these manage the multi-phase scope above). Defer until #23 ships and at least one project has run a real milestone end-to-end.
+
+---
+
+### 29. Tighten the prompt step: auto-chain into executor, allow `--no-prompt` for trivial issues
+
+**Status:** adr-drafted
+**Target:** v-next
+**Captured:** 2026-04-30
+**ADR:** [ADR-038](../Design/adr/adr-038-tighten-prompt-step.md)
+
+**Context / trigger:** The kit's per-issue prompt artefact (`prompts/issue-NNN-*.md`, ADR-008 + ADR-013) is a load-bearing piece of the audit trail and the natural anchor for several v-next ideas (#25 plan-checker, #26 state.md). But a fair question came up — is the prompt strictly necessary now that Claude Code has plan mode? Honest read: dropping it loses the per-session brief (which ADRs apply, which build-out-plan phase, acceptance criteria, scope boundary, clarifications gathered post-ADR), the audit trail (one prompt per issue, committed alongside the work), and the re-runnable-with-the-same-brief property. The cost is already near-zero thanks to `/prepare-issue` auto-filling from the issue + ADRs + plan. So the right move is to keep the artefact and lower its ceremony, not remove it.
+
+**Sketch of the idea:** Two small changes:
+1. **Auto-chain `/prepare-issue` into `claude-issue-executor`** so the prompt is a side effect of starting work, not a separate command. The executor checks for `prompts/issue-NNN-*.md`; if absent, calls `/prepare-issue` first; if present and stale (issue body changed since), regenerates with confirmation.
+2. **`--no-prompt` mode on the executor** for one-line bug fixes, chores, dependency bumps, CI tweaks, doc fixes — the ADR-less path the workflow guide already acknowledges (`templates/issue-template.md:15`). Skips prompt generation, runs from the issue body alone. Documented criteria for when this is appropriate (single-PR scope, no design decisions, no ADR linkage).
+
+**Options in mind:**
+- **Both changes together** — recommended; reduces ceremony for trivial work, preserves discipline for ADR-driven work.
+- **Auto-chain only** — keeps the artefact mandatory; cheapest change but doesn't address the "this is overkill for a typo fix" case.
+- **`--no-prompt` only** — leaves the manual two-step (`prepare` then `execute`) for everyone else.
+- **Replace the prompt with prompt-mode-only** — strips out the artefact entirely. Rejected: loses the audit trail, the session-rerun guarantee, and the anchor for #25 / #26.
+
+**Open questions:** What counts as "stale" for prompt regeneration — issue-body changed, linked ADR changed, or both? Does `--no-prompt` work need to leave any breadcrumb (e.g. a one-line note in the commit) for traceability? Should `--no-prompt` be opt-in by user flag, or auto-detected when the issue lacks ADR references?
+
+**Consequences to think through:** Easier — fewer manual steps for the common case; trivial issues stop carrying ADR-shaped ceremony; prompt artefact remains the anchor for downstream features. Harder — auto-chain hides a step users may want to see (mitigation: log the prep step prominently); `--no-prompt` is a slippery slope if its criteria aren't tight (mitigation: documented checklist). Maintenance — small; both changes live inside `claude-issue-executor` and only touch its argument handling.
+
+**Alignment note for the ADR:** When this graduates to an ADR, explicitly check the prompt step is still pulling its weight against everything else landing in v-next — #22 (deeper planning), #23 (phases), #24 (clarify), #25 (plan-checker), #26 (state.md), #28 (milestone lifecycle). The prompt is the connective tissue between ADRs and execution; if any of those features start producing artefacts that overlap with what the prompt captures (e.g. phase-context files from #23, decisions doc from #24), the prompt's content shape should be revisited so the kit isn't carrying duplicate context across files.
+
+**Dependency note:** Touches `claude-issue-executor` (ADR-014) and `prepare-issue` (ADR-013). Independent of #22/#23 but should be sequenced after the shape of #24 and #26 is at least sketched, so the prompt's content boundary is settled before this lands.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.

@@ -45,6 +45,14 @@ fences is preserved.
 | [ADR-028](adr-028-workflow-agnostic-framing.md) | Reframe the kit as workflow-agnostic, not software-only | accepted |
 | [ADR-029](adr-029-per-project-remote-install.md) | Recommend per-project remote install over local-clone-once | accepted |
 | [ADR-030](adr-030-installer-license-flag.md) | Implement installer `--license` flag | accepted |
+| [ADR-031](adr-031-deeper-planning-workflow.md) | Deeper planning workflow between MVP scoping and ADR drafting | accepted |
+| [ADR-032](adr-032-implementation-phases.md) | Implementation phases in PRD review and planning | accepted |
+| [ADR-033](adr-033-clarify-step.md) | Clarification step (`/clarify`) before ADR drafting | accepted |
+| [ADR-034](adr-034-plan-checker.md) | Plan-checker quality gate for ADRs and issue prompts | accepted |
+| [ADR-035](adr-035-state-md-session-continuity.md) | `Design/state.md` and session-continuity artefacts | accepted |
+| [ADR-036](adr-036-granularity-control.md) | Granularity / density control for phased plans | accepted |
+| [ADR-037](adr-037-milestone-lifecycle.md) | Milestone lifecycle commands (audit, summary, complete) | accepted |
+| [ADR-038](adr-038-tighten-prompt-step.md) | Tighten the prompt step — auto-chain executor and `--no-prompt` mode | accepted |
 
 <!-- adr-index:end -->
 
