@@ -62,13 +62,28 @@ cover every in-scope capability of the MVP.
    non-goals, and goal — principles that will resolve future scope
    arguments.
 5. Draft `Design/build-out-plan.md` from
-   `templates/build-out-plan-template.md`. Sequence into 2–4 phases.
-   Each phase has a goal, deliverables, exit criteria. Ask the user
-   once whether the phase count and shape feel right.
+   `templates/build-out-plan-template.md`. Sequence into 2–4 phases
+   (per ADR-032). Each phase has: goal, scope bullets, ADR
+   dependencies, deliverables, exit criterion. For small projects
+   where the whole MVP fits in one delivery cut, emit a single
+   `## Phase 1` block — every downstream skill treats a single-phase
+   plan identically to a flat plan, so this is the back-compat path.
+   Ask the user once whether the phase count and shape feel right.
 6. Surface a **"Decisions needing ADRs"** list as the final section
    of `build-out-plan.md` (or a short separate note). Each item is one
    architectural question with a one-line context pointer. This list
    is the input to `adr-writer`.
+
+## Single-phase fallback
+
+A weekend or one-week project usually does not benefit from
+multi-phase decomposition. In that case, emit one `## Phase 1`
+block whose scope covers the entire MVP and exit criterion is "MVP
+ships." Downstream skills (`issue-planner`, `workflow-docs`,
+`/release`) treat a single-phase plan as one implicit phase and
+behave identically to the pre-ADR-032 flat-plan path. The decision
+is the user's; surface the option explicitly during scoping rather
+than defaulting silently.
 
 ## How `[TBD]` fields are handled
 
