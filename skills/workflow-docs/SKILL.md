@@ -127,6 +127,7 @@ Each generated section has a deterministic rule for when it appears:
 | `scope`         | `Design/mvp.md` has an "In scope" and/or "Out of scope" section |
 | `how-to-run`    | `CLAUDE.md` has non-placeholder commands                    |
 | `key-decisions` | `Design/adr/` contains at least one ADR                     |
+| `roadmap`       | `Design/build-out-plan.md` has 2+ `### Phase N` blocks (per ADR-032). Single-phase / no-phase plans omit this section. |
 | `more`          | Always — static pointers to `CLAUDE.md`, `Design/`          |
 
 ### `Design/ai-summary.md`
@@ -145,6 +146,20 @@ A section is **omitted** by removing its heading, body, and both
 markers — the file skips straight from the previous section to the
 next. The template is written so adjacent omitted sections leave no
 stray blank lines.
+
+### Roadmap section content (per ADR-032)
+
+When the `roadmap` section appears, render a compact table sourced
+from `Design/build-out-plan.md`'s `### Phase N: <name>` blocks:
+
+| # | Phase | Goal | Exit criterion |
+|---|-------|------|----------------|
+| 1 | Foundation | one-line goal | observable exit |
+| 2 | Core feature | one-line goal | observable exit |
+| 3 | Polish | one-line goal | observable exit |
+
+Single-phase projects omit the roadmap section entirely — phase
+metadata is implicit and adds no information to the README.
 
 ## Execution protocol
 

@@ -5,6 +5,21 @@
   The build-out plan sequences the MVP into phases, milestones, and an
   initial issue backlog. It should be lightweight enough to revise
   mid-project and concrete enough to drive GitHub issue creation.
+
+  Phases (per ADR-032). The "## Phases" section below uses richer
+  per-phase blocks: goal, scope bullets, ADR dependencies, and an exit
+  criterion. Downstream skills read this:
+    - issue-planner creates one GitHub milestone per phase.
+    - workflow-docs surfaces phases in the README roadmap.
+    - /release defaults to one phase per release.
+    - adr-writer respects each ADR's optional `**Phase:**` frontmatter
+      so the ADR index gains a Phase column when any ADR is phased.
+
+  Single-phase fallback. A plan with only one `## Phase` section — or
+  with no `## Phase` headings at all — is treated as one implicit
+  phase by every downstream skill. Small projects can keep using the
+  flat structure unchanged. See docs/workflow-guide.md for the
+  fallback semantics.
 -->
 
 # {{PRODUCT_NAME}} — Build-Out Plan
@@ -50,19 +65,39 @@ The plan is complete when a user can:
 
 ## Phases
 
-### Phase 1 — {{NAME}}
+<!-- Each phase below is a delivery unit. issue-planner creates one
+     GitHub milestone per phase; /release treats one phase as the
+     default release boundary. Single-phase projects keep one block. -->
+
+### Phase 1: {{NAME}}
 
 - **Goal:** {{one line}}
+- **Scope:**
+  - {{in-scope item 1}}
+  - {{in-scope item 2}}
+  - {{in-scope item 3}}
+- **ADR dependencies:** {{ADR-NNN, ADR-NNN, ... or "none"}}
 - **Deliverables:** {{2–4 concrete artifacts}}
-- **Exit criteria:** {{how you know the phase is done}}
+- **Exit criteria:** {{how you know the phase is done — observable, not a task list}}
 
-### Phase 2 — {{NAME}}
+### Phase 2: {{NAME}}
 
 - **Goal:** {{one line}}
+- **Scope:**
+  - {{in-scope item 1}}
+  - {{in-scope item 2}}
+- **ADR dependencies:** {{...}}
 - **Deliverables:** {{...}}
 - **Exit criteria:** {{...}}
 
-<!-- Add Phase 3+ as needed. Keep each phase to one readable block. -->
+<!-- Add Phase 3+ as needed. Keep each phase to one readable block.
+     For single-phase projects, keep just Phase 1 — every downstream
+     skill treats a single-phase plan identically to a flat plan. -->
+
+<!-- Phased ADR linkage. ADRs that belong to a specific phase should
+     declare it via the optional `**Phase:**` frontmatter line in their
+     ADR file. bin/sync-adr-index will surface a Phase column in
+     Design/adr/README.md whenever any ADR is phase-tagged. -->
 
 ## Milestone recommendation
 
