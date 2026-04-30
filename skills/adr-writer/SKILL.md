@@ -71,6 +71,9 @@ ADR-006:
 
 - Top-level heading `# ADR-NNN: Title`.
 - `**Status:**` and `**Date:**` lines immediately after the heading.
+- Optional `**Phase:** N` line when the ADR belongs to a specific
+  build-out-plan phase (per ADR-032). Omit the line on cross-cutting
+  ADRs and on single-phase projects.
 - Four top-level sections: `## Context`, `## Options considered`,
   `## Decision`, `## Consequences`.
 - Options as `### Option A: Name` etc., each with `- Pros:` and
@@ -97,6 +100,13 @@ Repeat for every topic in the input batch:
 5. Draft `## Consequences` as four bullets covering what becomes
    easier / harder / has to be maintained / is deferred. If a bullet
    has nothing to add, write "None new" rather than removing it.
+6. **Phase tagging (optional, per ADR-032).** If the input topic
+   names a phase, or if `Design/build-out-plan.md` makes the ADR's
+   phase obvious, write `**Phase:** N` immediately after the
+   `**Date:**` line. Omit the line for cross-cutting ADRs and for
+   single-phase projects. The line is opt-in — when set,
+   `bin/sync-adr-index` surfaces a Phase column in
+   `Design/adr/README.md`.
 
 ## Drafting protocol — batch
 
