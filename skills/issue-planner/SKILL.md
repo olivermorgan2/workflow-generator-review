@@ -105,11 +105,28 @@ write these files; tolerate minor formatting drift.
    issues should be filed against.
 3. Every bullet (`- {{title}}`) under that subheading is one issue
    title.
-4. If the backlog section is missing or empty, fall back to the
-   `## Phases` section: treat each `### Phase N — NAME` as a milestone
-   grouping and each bullet under its **Deliverables** as an issue
-   title. Warn the user that this fallback is in use.
-5. Capture the `## Milestone recommendation` table if present — it maps
+4. **Phase-driven path (per ADR-032).** When the build-out plan
+   contains `### Phase N: <name>` blocks (the post-ADR-032 shape) or
+   `### Phase N — <name>` blocks (legacy shape), create **one
+   GitHub milestone per phase** named "Phase N — <name>" by default,
+   and assign each issue to its phase's milestone. The phase a given
+   issue belongs to is determined by:
+   - the `**Phase:**` frontmatter on its linked ADR, if any,
+   - else the phase whose **Scope** or **Deliverables** bullets best
+     match the issue title,
+   - else the user's confirmation at the approval step.
+   The `## Milestone recommendation` table, when present, can override
+   the default per-phase milestone name.
+5. **Single-phase fallback.** A plan with exactly one `### Phase`
+   block — or with no `### Phase` headings at all — is treated as
+   one implicit phase. Behaviour is identical to the pre-ADR-032
+   flat path: one milestone for the whole project (named from the
+   `## Milestone recommendation` table or prompted from the user).
+6. **Backlog-section path (legacy).** If the backlog section is
+   missing or empty, fall back to deriving issues from each phase's
+   **Deliverables** bullets. Warn the user that this fallback is in
+   use.
+7. Capture the `## Milestone recommendation` table if present — it maps
    milestone short names (M1, M2, ...) to a focus description used in
    the milestone's GitHub description field.
 
