@@ -98,7 +98,7 @@ temporary kit copy on exit.
 
 ```bash
 cd my-project                                              # target project root
-bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.2.0/bootstrap-workflow-kit) \
+bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.3.0/bootstrap-workflow-kit) \
   --project-name=my-project
 ```
 
@@ -106,7 +106,7 @@ Prefer to inspect the script before running, or pipe-to-bash makes
 you nervous? Download it first:
 
 ```bash
-gh release download v3.2.0 -p bootstrap-workflow-kit \
+gh release download v3.3.0 -p bootstrap-workflow-kit \
   -R olivermorgan2/workflow-generator
 chmod +x bootstrap-workflow-kit
 ./bootstrap-workflow-kit --project-name=my-project
@@ -126,7 +126,7 @@ Environment variables:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `WORKFLOW_KIT_VERSION` | latest tag | Pin to a specific tag, e.g. `v3.2.0`. |
+| `WORKFLOW_KIT_VERSION` | latest tag | Pin to a specific tag, e.g. `v3.3.0`. |
 | `WORKFLOW_KIT_REPO` | `olivermorgan2/workflow-generator` | Override for forks. |
 
 The installer's behaviour itself is unchanged from ADR-009:
@@ -163,7 +163,7 @@ Useful installer flags (forwarded by the bootstrap):
 > "Jane Doe" alongside the rest of the install:
 >
 > ```bash
-> bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.2.0/bootstrap-workflow-kit) \
+> bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.3.0/bootstrap-workflow-kit) \
 >   --project-name=my-project \
 >   --license=mit \
 >   --license-holder="Jane Doe"
@@ -183,12 +183,12 @@ clean up:
 ```bash
 TMPKIT="$(mktemp -d)" && \
   gh repo clone olivermorgan2/workflow-generator "$TMPKIT" -- \
-    --depth=1 --branch=v3.2.0 && \
+    --depth=1 --branch=v3.3.0 && \
   "$TMPKIT/bin/install-workflow-kit" --project-name=my-project && \
   rm -rf "$TMPKIT"
 ```
 
-Replace `v3.2.0` with whichever release you want to pin. Replace the
+Replace `v3.3.0` with whichever release you want to pin. Replace the
 installer flags with whatever your project needs (see the table in
 [3A](#3a-bootstrap-install-recommended)).
 
@@ -196,7 +196,7 @@ If `gh` is not installed, swap the clone line for plain git over
 HTTPS:
 
 ```bash
-git clone --depth=1 --branch=v3.2.0 \
+git clone --depth=1 --branch=v3.3.0 \
   https://github.com/olivermorgan2/workflow-generator.git "$TMPKIT"
 ```
 
@@ -210,8 +210,8 @@ diagnostic reference if the installer misbehaves.
 
 ```bash
 TMPKIT="$(mktemp -d)"
-gh repo clone olivermorgan2/workflow-generator "$TMPKIT" -- --depth=1 --branch=v3.2.0
-# or:  git clone --depth=1 --branch=v3.2.0 https://github.com/olivermorgan2/workflow-generator.git "$TMPKIT"
+gh repo clone olivermorgan2/workflow-generator "$TMPKIT" -- --depth=1 --branch=v3.3.0
+# or:  git clone --depth=1 --branch=v3.3.0 https://github.com/olivermorgan2/workflow-generator.git "$TMPKIT"
 ```
 
 #### 3C.2 From inside the target project, copy the skills

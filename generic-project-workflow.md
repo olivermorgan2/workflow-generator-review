@@ -2,6 +2,15 @@
 
 > A reusable workflow template for setting up and running software projects with AI-assisted development (Claude Code), GitHub-based project management, and structured design documentation. This document is intended to be refined with an external AI before implementation.
 
+> **Note (post-v3.3.0):** This document is the **original design reference** that
+> predates much of the kit's implementation. For the current, action-oriented
+> walkthrough — including v-next features like `/clarify`, `/check-plan`,
+> `/planning`, `Design/state.md` + `/resume` + `/pause`, the `--granularity`
+> flag, milestone lifecycle skills (`/audit-milestone`, `/milestone-summary`,
+> `/complete-milestone`), `--no-prompt` mode, and plan-mode rhythm — see
+> [`docs/workflow-guide.md`](docs/workflow-guide.md) instead. This file is kept
+> as historical context for how the workflow was originally conceived.
+
 ---
 
 ## 1. Objective
@@ -837,15 +846,30 @@ When adapting this workflow to a specific project, these are the sections that n
 
 ## 15. Open Questions for Refinement
 
-These are areas where this workflow could be extended or where decisions need to be made per-project:
+These were areas where this workflow could be extended or where decisions
+needed to be made per-project. Several have been resolved by accepted ADRs;
+the remaining open questions are kept here as historical context.
 
-1. **Milestones vs. labels for release planning** — should features be grouped into milestones (v1.0, v1.1) or tracked purely via labels?
-2. **GitHub Projects board** — is a kanban board useful for solo development, or is it overhead?
-3. **Changelog generation** — should merged PRs auto-generate a CHANGELOG.md?
-4. **Semantic versioning** — when does a project need version numbers vs. just running HEAD?
-5. **CI/CD pipeline** — what's the minimal useful GitHub Actions workflow? (lint + test on PR, deploy on merge to main?)
-6. **Multiple environments** — staging vs. production? Or just main = production for solo projects?
-7. **Issue templates** — should the repo include `.github/ISSUE_TEMPLATE/` for consistent issue creation?
-8. **PR templates** — should `.github/pull_request_template.md` enforce the PR body structure?
+**Resolved by the kit (as of v3.3.0):**
+
+1. ~~**Milestones vs. labels for release planning**~~ — resolved by ADR-032
+   (one milestone per phase) and ADR-037 (milestone lifecycle skills).
+2. ~~**GitHub Projects board**~~ — resolved by ADR-012 (project board created
+   by `/issue-planner`).
+3. ~~**Changelog generation**~~ — resolved by ADR-016 (`/changelog` skill).
+4. ~~**Semantic versioning**~~ — resolved by ADR-026 (kit versioning policy)
+   and ADR-017 (`/release` skill).
+7. ~~**Issue templates**~~ — resolved by `templates/issue-template.md`.
+8. ~~**PR templates**~~ — resolved by `templates/pr-template.md` and ADR-015
+   (`/pr-review-packager`).
+
+**Still open (per-project decisions):**
+
+5. **CI/CD pipeline** — what's the minimal useful GitHub Actions workflow?
+   (lint + test on PR, deploy on merge to main?) See feature-ideas.md for
+   "Starter GitHub Actions CI/CD workflows".
+6. **Multiple environments** — staging vs. production? Or just main =
+   production for solo projects?
 9. **Dependabot / Renovate** — automated dependency updates?
-10. **Secret management** — project-specific approach (env vars, Keychain, Vault, GitHub Secrets)?
+10. **Secret management** — project-specific approach (env vars, Keychain,
+    Vault, GitHub Secrets)?

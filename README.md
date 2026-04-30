@@ -130,7 +130,7 @@ both the GitHub repo and the local folder.
    when done:
 
    ```bash
-   bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.2.0/bootstrap-workflow-kit) \
+   bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.3.0/bootstrap-workflow-kit) \
      --project-name=my-project
    ```
 
@@ -144,7 +144,7 @@ both the GitHub repo and the local folder.
    makes you nervous? Download it first, then run:
 
    ```bash
-   gh release download v3.2.0 -p bootstrap-workflow-kit \
+   gh release download v3.3.0 -p bootstrap-workflow-kit \
      -R olivermorgan2/workflow-generator
    chmod +x bootstrap-workflow-kit
    ./bootstrap-workflow-kit --project-name=my-project
@@ -183,7 +183,7 @@ starting from `~/src`:
 cd ~/src                                                       # step 1
 gh repo create invoice-tracker --public --clone                # step 2
 cd invoice-tracker
-bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.2.0/bootstrap-workflow-kit) \
+bash <(curl -fsSL https://github.com/olivermorgan2/workflow-generator/releases/download/v3.3.0/bootstrap-workflow-kit) \
   --project-name=invoice-tracker                               # step 3
 ls .claude/skills                                              # verify
 # → adr-writer  idea-to-prd  prd-normalizer  prd-to-mvp
@@ -191,7 +191,7 @@ claude                                                         # step 4
 # then inside Claude Code: /idea-to-prd
 ```
 
-Pinning the kit version is recommended — `v3.2.0` in the URL above
+Pinning the kit version is recommended — `v3.3.0` in the URL above
 locks the install to that release, so re-scaffolding produces the
 same result. To check for newer versions, see the
 [releases page](https://github.com/olivermorgan2/workflow-generator/releases).
@@ -244,6 +244,42 @@ project's lifetime:
   project's PRD, MVP, ADRs, and `CLAUDE.md`. Re-run after any
   meaningful change; manual edits outside the marker fences are
   preserved (per ADR-018).
+- **Deeper planning for non-trivial projects (opt-in).**
+  `/planning` adds a `Design/planning.md` between MVP scoping and
+  ADR drafting (decomposition, risks, sequencing — per ADR-031);
+  `/clarify` resolves gray areas into a `Design/decisions.md`
+  append-only log (below ADR weight, per ADR-033). The build-out
+  plan can be split into `## Phase N` blocks (per ADR-032), each
+  becoming its own GitHub milestone and release boundary; tune the
+  phase count with `--granularity={coarse|standard|fine}` on
+  `prd-to-mvp` and `/planning` (per ADR-036). `/check-plan` runs
+  a structural quality gate over ADRs and issue prompts before
+  they're written; chained from `/adr-writer` and `/prepare-issue`,
+  with `--skip-check` to opt out (per ADR-034).
+- **Session continuity across context resets.**
+  `Design/state.md` is a small committed pointer (~100 lines) with
+  five marker-fenced zones: phase, in-flight issue, recent PRs,
+  blockers, continue-here. `/resume` reads it at the start of a
+  fresh session; `/pause` refreshes it before a context reset and
+  optionally writes a longer `notes/handoff-YYYY-MM-DD.md`
+  (per ADR-035).
+- **Milestone lifecycle (multi-phase delivery checkpoints).**
+  `/audit-milestone <N>` verifies a GitHub milestone is finishable
+  (issues closed, ADRs linked to merged PRs, phase exit criteria
+  met); `/milestone-summary <N>` generates
+  `Design/milestones/<N>-<slug>.md` from `git log` + the milestone
+  + accepted ADRs; `/complete-milestone <N> [--release]` closes
+  the GitHub milestone, archives state.md, and optionally chains
+  `/release --milestone-phase=N` (per ADR-037).
+- **Lower-friction prompt step for trivial work.**
+  `/claude-issue-executor` auto-chains `/prepare-issue` if no
+  prompt exists yet, and accepts a `--no-prompt` flag for genuinely
+  trivial issues (typo fixes, dependency bumps) — leaving a
+  one-line audit-trail breadcrumb in the first commit (per
+  ADR-038). Significant sessions use Claude Code's harness-level
+  plan mode (`shift+tab shift+tab`); the executor pauses at the
+  threshold and asks the user to enter plan mode before proposing
+  a plan (per ADR-039).
 
 The full flow from idea to release is documented end-to-end in
 [`docs/workflow-guide.md`](docs/workflow-guide.md).
