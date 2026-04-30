@@ -9,6 +9,11 @@
 
 **Status:** proposed | accepted | rejected | superseded by ADR-{{NNN}}
 **Date:** {{YYYY-MM-DD}}
+<!-- Optional: declare the build-out-plan phase this ADR belongs to.
+     Omit the line if the project is single-phase or this ADR is
+     cross-cutting. When set, bin/sync-adr-index surfaces a Phase
+     column in Design/adr/README.md. Per ADR-032. -->
+**Phase:** {{N}}
 
 ## Context
 
