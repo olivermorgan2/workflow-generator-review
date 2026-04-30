@@ -43,19 +43,36 @@ If no prompt file exists yet, stop and tell the user to run
 ## Invocation contract
 
 ```
-/claude-issue-executor <path-to-prompt-file>
+/claude-issue-executor <path-to-prompt-file-OR-issue-number>
 ```
 
-- **Argument (optional):** relative or absolute path to a prepared prompt
-  file. Preferred location: `prompts/issue-NNN-short-title.md`. Legacy
-  location (pre-ADR-008, still supported as a fallback): `notes/issueN-prompt.md`.
-- **No argument given:** list candidate prompt files from `prompts/` and,
-  as a fallback, `notes/issue*-prompt.md`. Ask the user which to use.
-  Do nothing else until they answer.
+- **Argument (optional):** either (a) a path to a prepared prompt file
+  — preferred location `prompts/issue-NNN-short-title.md`, legacy
+  fallback `notes/issueN-prompt.md`; or (b) a GitHub issue number, in
+  which case the skill resolves the prompt path itself and may
+  auto-chain `/prepare-issue` per the auto-chain protocol below
+  (ADR-038).
+- **No argument given:** list candidate prompt files from `prompts/`
+  and, as a fallback, `notes/issue*-prompt.md`. Ask the user which to
+  use. Do nothing else until they answer.
 
-No other flags are defined. Edge-case behaviour (branch exists,
-dirty tree, plan denied) is handled interactively — see the
-**Edge cases** section rather than multiplying flags.
+### Auto-chain `prepare-issue` (per [ADR-038](../../Design/adr/adr-038-tighten-prompt-step.md))
+
+When the resolved issue has no `prompts/issue-NNN-*.md` on disk, the
+skill auto-invokes `/prepare-issue NNN` and proceeds. The prep step
+is logged prominently so the user sees it happen — auto-chain reduces
+ceremony, not visibility.
+
+When a prompt exists but is **stale** — its mtime is older than the
+issue body's `updatedAt` (via `gh issue view <NNN> --json updatedAt`)
+or older than any linked ADR's mtime — the skill asks the user
+whether to regenerate. Default action: **regenerate with
+confirmation, never silently**. On `n`, proceed with the existing
+prompt and surface a one-line note in the eventual evaluation
+summary.
+
+The auto-chain runs *before* significance classification, so plan-
+mode rhythm (ADR-039) gates the regenerated prompt as well.
 
 ## Inputs
 
@@ -276,32 +293,108 @@ ADR-038 carries a mandatory content-boundary review obligation that
 serves as the enforcement point for keeping the two checklists in
 lockstep.
 
+## `--no-prompt` mode
+
+Per [ADR-038](../../Design/adr/adr-038-tighten-prompt-step.md), the
+executor accepts a `--no-prompt` flag that **skips prompt generation
+entirely** and runs from the issue body alone. The prompt artefact is
+not written. A one-line breadcrumb — `issue executed without prompt
+per ADR-038` — is appended to the first commit's message so the
+audit trail survives.
+
+### When `--no-prompt` is appropriate
+
+The criteria for `--no-prompt` are exactly the **Trivial checklist**
+above (lines beginning *"A session is **trivial** if it is one of:"*).
+That checklist is the **single source of truth**; the `--no-prompt`
+mode does not duplicate it. If the trivial checklist evolves, this
+mode's criteria evolve in lockstep — see the **Alignment-review
+obligation** section just above.
+
+### Auto-detect (with confirmation)
+
+When the user invokes `/claude-issue-executor <issue-number>` (no
+explicit `--no-prompt`), the executor auto-detects candidates
+*conservatively*:
+
+- The issue has **zero `ADR-NNN` references** in its body, AND
+- The issue has at least one of the labels `chore`, `docs`, or
+  `bugfix-trivial`.
+
+When both conditions hold, the executor *suggests* `--no-prompt`
+mode and asks for confirmation: *"Issue looks trivial — skip prompt
+generation? (yes / no)"*. On `yes`, proceed without prompt. On `no`,
+fall back to the standard auto-chain path. The suggestion never
+short-circuits silently.
+
+### Override
+
+Explicit `--no-prompt` overrides auto-detection — no confirmation is
+asked. This is for the user who already knows the issue is trivial
+and wants the lowest-ceremony path. The breadcrumb is still left in
+the commit message.
+
+### Interactions
+
+- **Plan-mode rhythm** (ADR-039) still applies. `--no-prompt`
+  affects the *prompt* step, not the plan-mode gate. A trivial
+  issue with `--no-prompt` typically also classifies as
+  clearly-trivial against the significance checklist, so plan mode
+  is not requested. But if the executor is ever invoked with
+  `--no-prompt` on something that *is* significant (e.g. a multi-
+  file refactor mislabelled `chore`), the significance gate still
+  fires — the two are independent.
+- **`/check-plan`** (ADR-034) does not run when `--no-prompt` is
+  set, because there is no rendered prompt to check. The skip is
+  noted in the evaluation summary alongside the breadcrumb.
+- **`Design/state.md`** updates (ADR-035) still happen. The
+  `state:in-flight` zone records `Status: verified` (or `executing`
+  mid-session) regardless of whether a prompt was generated.
+
 ## Session protocol — end to end
 
-1. **Parse invocation.** Resolve the prompt path. If no arg was given,
-   list candidates and ask. Then **classify the session against the
-   significance checklist** (see **Plan-mode rhythm** above): if
-   clearly-significant, request the user toggle plan mode before
-   continuing; if borderline, ask once; if clearly-trivial, proceed
-   with the chat plan-gate alone.
-2. **Preflight.** Confirm the working tree is clean. If dirty, stop and
+1. **Resolve the prompt (auto-chain `prepare-issue` per
+   [ADR-038](../../Design/adr/adr-038-tighten-prompt-step.md)).**
+   - If the argument is a *path*, treat as the prompt file directly.
+   - If the argument is an *issue number*, resolve the prompt at
+     `prompts/issue-NNN-*.md`. If absent, **auto-invoke
+     `/prepare-issue NNN`** and log the prep step prominently. If
+     present, run the staleness check: compare the prompt's mtime
+     against `gh issue view <NNN> --json updatedAt` and against the
+     mtime of every linked ADR. If any is newer, ask the user
+     whether to regenerate (default: yes; never silent). On `n`,
+     proceed with the existing prompt and note this in the
+     evaluation summary.
+   - If no argument was given, list candidate prompt files from
+     `prompts/` and (fallback) `notes/issue*-prompt.md`. Ask the
+     user which to use.
+2. **Parse invocation and classify.** With the prompt resolved
+   (or `--no-prompt` set — see **`--no-prompt` mode** below),
+   **classify the session against the significance checklist** (see
+   **Plan-mode rhythm** above): if clearly-significant, request the
+   user toggle plan mode before continuing; if borderline, ask once;
+   if clearly-trivial, proceed with the chat plan-gate alone.
+3. **Preflight.** Confirm the working tree is clean. If dirty, stop and
    ask the user to commit, stash, or discard. Confirm the current branch
    is `main` or agree with the user to switch.
-3. **Read and validate the prompt.** If malformed, stop and report.
-4. **Read the referenced ADR** and `CLAUDE.md`.
-5. **Propose the plan** (see **The plan gate**).
-6. **Wait for approval.** No edits until explicit yes.
-7. **Create the branch** from `main`.
-8. **Implement, commit incrementally.** Each commit is one logical
+4. **Read and validate the prompt.** If malformed, stop and report.
+   Skipped when `--no-prompt` is set; the issue body is used directly.
+5. **Read the referenced ADR** and `CLAUDE.md`.
+6. **Propose the plan** (see **The plan gate**).
+7. **Wait for approval.** No edits until explicit yes.
+8. **Create the branch** from `main`.
+9. **Implement, commit incrementally.** Each commit is one logical
    change with the required message format. Tests land with code. If
    a new significant boundary appears mid-session (scope expands
    beyond what was classified at start, e.g. an unforeseen
    `skills/*/SKILL.md` edit or a new `templates/*` change), pause and
    re-flag for plan-mode entry. Do not silently cross the boundary.
-9. **Verify.** Run the project's tests if any exist. Run any
-   verification step called out in the prompt's "Evaluation & testing
-   requirements" section.
-10. **Update `Design/state.md` if present.** Per
+   When `--no-prompt` is set, append the breadcrumb `issue executed
+   without prompt per ADR-038` to the first commit's message.
+10. **Verify.** Run the project's tests if any exist. Run any
+    verification step called out in the prompt's "Evaluation & testing
+    requirements" section.
+11. **Update `Design/state.md` if present.** Per
     [ADR-035](../../Design/adr/adr-035-state-md-session-continuity.md),
     rewrite the `state:in-flight` zone: keep `Issue` and `Prompt`,
     set `Branch` to the current branch, set `Status: verified`. The
@@ -310,9 +403,10 @@ lockstep.
     absent, skip silently. If marker fences are broken, do not
     rewrite; report the broken zone in the evaluation summary's
     follow-ups list and suggest `/pause`.
-11. **Evaluation summary.** Print the final summary (see **Evaluation
-    summary** below).
-12. **Suggest handoff.** Tell the user the next step is
+12. **Evaluation summary.** Print the final summary (see **Evaluation
+    summary** below). For `--no-prompt` runs, the summary explicitly
+    notes the bypass for the audit trail.
+13. **Suggest handoff.** Tell the user the next step is
     `/pr-review-packager` to package a PR. Do not invoke it.
 
 ## Evaluation summary
