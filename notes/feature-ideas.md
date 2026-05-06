@@ -964,6 +964,67 @@ PR #76's fix touched 3 of the 4 (the example.md polish was lost when the duplica
 
 ---
 
+### 36. Declarative runtime-asset manifest for the installer
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** PR #65 review feedback (issue #60 — installer cluster fix). Reviewer's main concern: "The installer is now becoming the de facto package manifest for runtime dependencies. Right now the dependency graph exists in multiple places: skills reference templates implicitly, installer copies templates explicitly, docs describe expectations separately. That creates future drift risk."
+
+**Context / trigger:** PR #65 codified a 12-entry runtime-template allowlist inline in the installer alongside `.github/` PR template, `.gitignore` split, and ADR README seed logic. This works at v3.4.0's asset count but the dependency graph is now spread across three surfaces that can drift independently:
+
+1. Skills reference templates implicitly (e.g. `prd-normalizer` consumes `templates/prd.md`; `prd-to-mvp` consumes `templates/mvp.md`).
+2. The installer copies templates explicitly via a hardcoded path list.
+3. Docs (`docs/install.md`, `docs/repo-structure.md`, individual skill SKILL.md files) describe expectations in prose.
+
+Adding a new runtime template today requires a five-step ritual: add template → update installer → update docs → update tests → remember staging rules. Manageable at 12 templates, brittle at 30. Same drift-class problem as #35 (commit taxonomy across labels/classifier/group order/examples) — multiple consuming surfaces deriving from one canonical truth, with PR review as the only enforcement.
+
+**Sketch of the idea:** A single declarative manifest at the kit root (e.g. `runtime-assets.yaml` or `runtime-assets.md` per the markdown-table-with-fields precedent of `skills/check-plan/criteria.md`) listing every runtime asset with its source path, install destination, and metadata (required/optional, applies-to-project-shape, since-version). The installer derives its copy logic from the manifest rather than hardcoded lists. Skills reference assets by manifest ID rather than path; docs link to the manifest as the canonical source.
+
+**Options in mind:**
+
+1. **Pure-YAML manifest** — installer parses YAML; concise but requires a YAML dependency in the install path.
+2. **Markdown-table manifest** — same shape as `skills/check-plan/criteria.md`; awk/sed-parseable; consistent with the kit's existing structured-data convention. Likely preferred.
+3. **Executable manifest** — bash/python script enumerating assets via function calls; most flexible but hardest to lint structurally.
+4. **Hybrid** — markdown-table source-of-truth + thin parser script (`bin/list-runtime-assets`) emitting structured output that consumers query. Same pattern as #35 option 3 and ADR-043's `bin/check-plan` precedent.
+
+**Open questions:** Where does the manifest live — repo root (`runtime-assets.md`) or under a kit-self-config directory? Does it cover only the runtime-template allowlist, or also `.github/` assets, the ADR README seed, the `.gitignore` split, and future installer-managed files? How should skills reference assets — by ID (loose coupling) or by absolute path (current implicit pattern)? Does this subsume #35's commit taxonomy as instances of a shared "kit-self structured-data file" pattern, or remain separate?
+
+**Consequences to think through:** Easier — adding a new runtime template becomes a one-file change; installer behaviour becomes auditable from one source; drift risk eliminated structurally rather than convention-dependent; pairs naturally with #37 (required-vs-optional categorization) as a column in the manifest schema. Harder — new artefact + parsing layer in the install path; potential bootstrap problem (the manifest is itself a runtime asset); migration of existing skills' implicit template references to manifest IDs is non-trivial. Maintenance — manifest schema needs versioning if the kit ever ships breaking installer changes.
+
+**Alignment note for the ADR:** New ADR. Same single-source-of-truth pattern as ADR-040 / 041 / 043 and proposed in #35. Cross-references ADR-001 (kit-as-skills installation model — this ADR refines its asset-management story without superseding it). Likely bundled with #37 (asset-categorization split) as one ADR rather than two — both flow from the same architectural question about how the installer derives its behaviour. Decision call before drafting: option 1 vs 2 vs 3 vs 4 above.
+
+**Dependency note:** Best landed after the v3.4.0 fixes settle (PRs #65, #66 in particular, which establish the v3.4.0 asset baseline; and ADR-042 / issue #71 which itself touches installer behaviour for non-product projects — its decisions may shape the manifest schema). Touches the installer script, every skill or doc that lists runtime assets, and the install test fixtures. Likely adds a top-level `runtime-assets.md` plus `bin/list-runtime-assets` if option 4 wins.
+
+---
+
+### 37. Categorize installer assets as required vs optional (fail-fast vs warn-and-continue)
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** PR #65 review feedback (issue #60 — installer cluster fix). Reviewer's smaller point: "warn-and-continue on missing-source rather than fail-fast is reasonable for optional helpers, but some of these assets are no longer optional. If a required runtime template is missing from the kit source, the installer may now produce a partially broken target while still reporting success."
+
+**Context / trigger:** PR #65 retains the existing "warn-and-continue on missing-source" installer behaviour for all assets, including the 12 newly-mandatory runtime templates it codifies. The binary "warn-and-continue for everything" was correct when assets were optional convenience helpers; with v3.4.0 codifying mandatory runtime templates as a kit-wide install contract, that policy is now too permissive — a missing required asset can produce a partially broken target while the installer reports success.
+
+**Sketch of the idea:** Introduce two categories of installer assets with distinct missing-source behaviour. **Required**: fail-fast — installer aborts with a clear error and a list of missing assets, target is left clean (or rolled back) so partial-install bugs are impossible. **Optional**: warn-and-continue — current behaviour, fine for convenience helpers like example projects. The 12 runtime templates and `.github/` PR template are required; ADR README seeding may also be required if `Design/adr/` is created. Convenience assets stay optional.
+
+**Options in mind:**
+
+1. **Inline annotation** — every asset reference in the installer carries a `required: true` / `required: false` flag; the existing copy-logic gains a fail-fast branch for required assets.
+2. **Per-category file lists** — installer maintains separate required and optional path lists; missing required ⇒ abort.
+3. **Manifest-derived (depends on #36)** — required-ness becomes a column in the runtime-asset manifest schema; installer reads it from the manifest. Cleanest if #36 lands.
+
+**Open questions:** Which assets are required vs optional, exactly? The 12 runtime templates and `.github/pull_request_template.md` are clearly required at v3.4.0; is the `Design/adr/README.md` seed required or optional? The `.gitignore` split? Should fail-fast abort the whole install on the first missing asset or accumulate the list and report all missing assets at the end (better UX)? Does this need to interact with install test fixtures that intentionally omit assets — likely a `--allow-missing` debug flag or test-only env var?
+
+**Consequences to think through:** Easier — silent partial-install bugs for required assets become structurally impossible; clearer install-failure UX (one error pointing at one or many missing files vs the current pile of warnings then "success"). Harder — installer needs richer error accumulation and reporting; install-test fixtures that intentionally omit assets need a way to opt out of fail-fast; rollback semantics need a decision (clean target vs partial target with error). Maintenance — required/optional categorization needs to stay current as assets are added; if it falls behind, fail-fast becomes warn-and-continue silently for newly-added required assets.
+
+**Alignment note for the ADR:** Likely bundled with #36 as one ADR rather than two — both flow from the same architectural question about how the installer derives its behaviour. If #36 doesn't land, this can stand alone as a small installer hardening using option 1 or 2. Cross-references ADR-001 (kit-as-skills installation model). Decision call before drafting: option 1 vs 2 vs 3.
+
+**Dependency note:** Best landed alongside or after #36 — option 3 cleanest, options 1/2 viable standalone. Touches the installer script directly and the install test fixtures. May add a `--allow-missing` flag or equivalent for test compatibility.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.
