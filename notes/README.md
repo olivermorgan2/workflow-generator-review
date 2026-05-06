@@ -1,15 +1,19 @@
 # Working notes
 
-Scratch and intermediate files used while building the kit itself. These
-are **kit-repo-only** — they are not copied into target projects.
+Scratch, ideation, and triage files used while building the kit itself.
+These are **kit-repo-only** — they are not copied into target projects.
 
 Contents:
 
-- `issue<n>.md` — body text for each GitHub issue on the MVP backlog
-- `issue<n>-prompt.md` — the per-issue Claude Code prompt used to work on
-  that issue (plan-first, see ADR-006)
-- `github-setup.md` / `github-setup2.md` — one-off setup prompts used to
-  provision the GitHub repo, labels, milestones, and issues
+- `bug-fixes.md` — triage holding pen for bugs found during dev / eval /
+  dogfooding. Entries graduate to GitHub issues.
+- `feature-ideas.md` — backlog of feature ideas captured for later batching.
+- `eval-issue-<n>.md` — post-issue evaluation reports from
+  `/claude-issue-executor` sessions.
+- `archive/phase-1/` — archived phase-1 build artefacts: per-issue prompts,
+  issue bodies, and one-off GitHub-setup prompts. Retained for browseable
+  history; the current per-issue convention is `prompts/issue-NNN-*.md`
+  (see ADR-006).
 
 The reusable Claude Code session prompt is at
 [`issue-prompt.md`](issue-prompt.md), with a worked example at

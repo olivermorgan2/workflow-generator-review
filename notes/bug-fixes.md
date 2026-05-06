@@ -40,7 +40,21 @@ Entries graduate to GitHub issues (or directly to PRs for trivial fixes).
 
 Ordered by severity (high → low) then capture date.
 
-_(none — all v3.4 entries filed; see Filed section below)_
+### `notes/` folder cleanup — promote templates out, refresh references
+
+**Status:** unfiled
+**Severity:** low
+**Captured:** 2026-05-06
+**Source:** dogfooding
+
+**Symptom:** Two follow-up steps deferred from the phase-1 archive of `notes/` (the issue/prompt/setup artefacts were moved to `notes/archive/phase-1/`):
+
+1. Promote `notes/issue-prompt.md` → `templates/issue-prompt.md` and `notes/issue-prompt-sample.md` → `examples/issue-prompt-sample.md`. They are reusable artefacts, not scratch.
+2. Update the ~10 files referencing the old `notes/` paths: `docs/issue-prompt-guide.md`, `docs/claude-code-guide.md`, `generic-project-workflow.md`, `examples/{idea-only,standard-prd,custom-prd}-example.md`, and skill fallback paths in `claude-issue-executor` / `issue-planner`. Skip `templates/claude-md-template.md` (refers to target-project `notes/`, not kit-internal).
+
+**Repro:** `grep -rln "notes/issue-prompt" --include="*.md"` from repo root.
+
+**Proposed fix:** Do (1) and (2) in one PR. Deferred — user is mid-flight on the referencing files.
 
 ---
 
