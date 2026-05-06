@@ -804,6 +804,132 @@ Best written after the skills and structural decisions are settled, so the docs 
 
 ---
 
+### 31. Cross-skill design-question carry-forward
+
+**Status:** ready-for-adr
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** v3.3.0 baseline eval — research-tracker fixture (see `runs/kit-v3.3.0/baseline-verdict.md` § "Cross-skill chain handoff")
+
+**Context / trigger:** Research-tracker demonstrated organically a property the kit aspires to but doesn't currently codify: **end-to-end design-coherence loop closure across the implementation skill chain**. On issues #4 + #5 (the depth-scaled note templates), the full round-trip happened: `/claude-issue-executor 4` raised two design-agreement questions in eval-summary follow-ups → `/pr-review-packager #16` preserved them in PR body's "Notes for #5" → `/prepare-issue 5` carried them into the prompt as a load-bearing section → `/claude-issue-executor 5` MADE both decisions with documented reasoning → `/pr-review-packager #17` surfaced the decisions in PR body with ✅ checkmarks. **Audit-trail-grade visibility — anyone reading the PR sequence can trace the design-coherence work.** This emerged from the kit's existing skill behaviors composing well; no skill-spec hook required it. Codifying it as a deterministic property (with skill-spec hooks for design-question carry-forward across the executor → packager → prepare-issue boundary) would promote this from happy-accident to kit promise.
+
+**Sketch of the idea:** Add three skill-spec hooks across the implementation chain:
+
+1. **`claude-issue-executor`** — eval-summary's "Follow-ups" section gains a structured `design-questions:` subfield (machine-readable list of open design-coherence questions raised during the issue, each with a target-issue reference). Skill spec requires populating it when the executor's plan touches a load-bearing constraint shared with another upcoming issue.
+2. **`pr-review-packager`** — when generating the PR body, scans the executor's eval-summary for `design-questions:` entries; preserves them in a dedicated "Notes for #N" section in the PR body for each target issue. Already happens organically on research-tracker; making it spec-mandated removes the dependence on chain-aware authoring.
+3. **`prepare-issue`** — when generating a prompt for issue #N, scans recently-merged PRs for "Notes for #N" sections; extracts and embeds them in a "Two design-agreement points carried forward from PR #M" subsection of the new prompt. Currently happens organically when `/prepare-issue` is run after the relevant PR merges; spec-mandate makes it deterministic.
+
+**Options in mind:**
+
+- **All three hooks together** — recommended; full chain-handoff loop deterministic. Strongest property.
+- **`claude-issue-executor` + `pr-review-packager` only** (skip `prepare-issue` integration) — packager preserves the carry-forward in PR history, but operator-facing visibility ends there. Loses the deterministic propagation into the next issue's prompt.
+- **Codify in CLAUDE.md / workflow guide only, no skill-spec change** — relies on author / assistant discipline to follow the pattern. Lightest, but exactly the gap this entry exists to close.
+- **A standalone "design-coherence" skill** invoked from the chain — adds a layer; rejected as redundant with the existing skills' natural surface area for this work.
+
+**Open questions:** What's the canonical schema for `design-questions:` entries — title + target-issue reference + one-paragraph context, or richer? How does this interact with `--no-prompt` mode from #29 (ADR-038) — `--no-prompt` issues skip `/prepare-issue` entirely, breaking the propagation. Probably acceptable since `--no-prompt` is for trivial issues that wouldn't have design-coherence questions anyway, but worth explicit. Should the propagation surface in `claude-issue-executor`'s plan-mode prompt itself, or only in the prompt artefact? How does this interact with #25 (plan-checker quality gate) — design-coherence checks would be a natural consumer of the structured `design-questions:` output.
+
+**Consequences to think through:** Easier — design-coherence work that today depends on chain-aware authoring becomes deterministic regardless of who's at the keyboard; cross-issue continuity is operator-visible in PR history without needing manual notes-for-future-self. Harder — three skills now share a structured-data contract, which becomes load-bearing for cross-skill handoff; spec drift between the three would silently break the loop. Maintenance — the `design-questions:` schema is new shared surface area; needs a single source of truth (likely in the workflow guide) and changes require updates across three skill specs in lockstep. Also — over-eager population of `design-questions:` could clutter PR bodies on issues that don't actually have cross-issue design coupling; spec needs a clear "when to populate / when not to" rule.
+
+**Alignment note for the ADR:** Likely supersedes or extends [ADR-038](../Design/adr/adr-038-tighten-prompt-step.md) (auto-chain). The existing auto-chain decision was about *whether* `/prepare-issue` runs automatically; this entry is about *what content* is plumbed through the chain. Likely sequenced after #25 (plan-checker) since plan-checker would consume the structured output.
+
+**Dependency note:** Touches `claude-issue-executor` (ADR-014), `pr-review-packager` (ADR-026?), `prepare-issue` (ADR-013). Pairs with #29 (ADR-038), #25 (plan-checker). Independent of the milestone-lifecycle work (#28).
+
+---
+
+### 32. Auto-mode permission contract — close the strict-mode bypass loophole
+
+**Status:** ready-for-adr
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** v3.3.0 baseline eval — F24 calibration trajectory across all three fixtures (see `runs/kit-v3.3.0/baseline-verdict.md` § "F-finding cluster status")
+
+**Context / trigger:** ADR-039 (entry #30) shipped harness-level plan mode for significant tasks in `claude-issue-executor`. The v3.3.0 baseline eval calibrated F24 (the executor's plan-mode bypass under "auto mode") across three fixtures: HIGH severity on md-notes (silent bypass), MEDIUM on podcast-pipeline (session-context-dependent), LOW on research-tracker (bypass-but-self-reported in alignment check). **The trajectory is positive but the principle stands**: even at LOW severity, the kit should not allow auto-mode to silently substitute for an explicit operator gate on significant tasks. The same shape appears in F23 (`/pr-review-packager`'s strict-mode-vs-runtime mismatch) and would appear in any future skill with strict-mode contracts. The kit needs an **explicit "permission mode" specification**: what auto-mode is allowed to substitute for, what it isn't, and how operators authorize substitutions when permitted.
+
+**Sketch of the idea:** Promote ADR-039's narrow plan-mode rule into a kit-wide permission contract spanning every skill with strict-mode gates. Two skill-spec changes:
+
+1. **`claude-issue-executor`**: significant-task gate must be triggered by an explicit operator-set toggle, not by auto-mode classifier inference. If auto-mode is active, skill explicitly asks the operator at session start ("Enter plan mode for this task? yes / no / decide-from-scope") rather than auto-entering or auto-skipping. The "yes / decide-from-scope" branches use ADR-039's existing checklist; "no" requires the operator to acknowledge the bypass in writing in the skill's chat output (so the bypass is operator-acknowledged, not silent).
+2. **`pr-review-packager`**: extend the same principle to the PR-creation gate. The skill currently asks for explicit yes regardless of auto-mode (which is correct — research-tracker confirmed this across 5 PRs). Codify that this is the canonical pattern for any skill with public/hard-to-reverse actions: auto-mode does NOT substitute for explicit approval on these surfaces.
+
+Plus a documentation change:
+
+3. **Workflow guide gains an "Auto-mode permission contract" section** that lists which skill operations auto-mode can/cannot substitute for. Acts as the canonical reference both operators and skill authors consult.
+
+**Options in mind:**
+
+- **Full permission contract spec** (recommended) — kit-wide rule with named substitutability for each skill operation. Strongest enforcement, clearest spec, biggest documentation surface.
+- **Skill-by-skill fix** — patch `/claude-issue-executor` and `/pr-review-packager` independently without a unifying spec. Cheaper to land; risks drift as new skills with strict-mode gates ship.
+- **Documentation-only change** — add a "skill authors should ask for explicit yes on hard-to-reverse actions" guideline to the workflow guide and trust authors. Lightest; exactly the gap this entry exists to close (the eval data shows authors comply organically — but the kit needs spec-grade enforcement, not author convention).
+- **Reject auto-mode entirely on strict-mode skills** — auto-mode classifier fails closed: any skill operation that the spec marks as "non-substitutable" causes auto-mode to error rather than substitute. Most secure; potentially over-restrictive for genuinely-trivial cases.
+
+**Open questions:** Where does the canonical contract live — in a new ADR, in the workflow guide, or both with one as source of truth? Does the contract need a per-skill "non-substitutable operations" list, or is the rule operation-shape-based ("any operation that affects shared state")? How does this interact with `--no-prompt` mode (#29) — `--no-prompt` is precisely the trivial-issue case where the operator has already authorized minimal-friction execution; should `--no-prompt` implicitly bypass the plan-mode gate, or does the contract require `--no-prompt --skip-plan-mode` explicit? How does the contract surface in skill chat output — every skill prepends a permission-mode banner, or only when about to substitute?
+
+**Consequences to think through:** Easier — operator gets predictable, spec-grade enforcement on hard-to-reverse skill operations regardless of which skill or which auto-mode classifier version they're running; bypass becomes operator-acknowledged rather than silent; F24-class regressions stop being possible. Harder — auto-mode loses some convenience (one extra interaction per significant-task session); skill authors need to consult the contract when adding new operations; spec drift between contract + skill specs would be a new failure mode. Maintenance — the contract is new shared surface area touching every skill with strict-mode gates; needs a single source of truth and changes require updates across multiple skill specs.
+
+**Alignment note for the ADR:** Likely supersedes or extends [ADR-039](../Design/adr/adr-039-plan-mode-for-significant-tasks.md) (entry #30). The existing ADR scoped the rule narrowly to `claude-issue-executor` plan mode; this entry generalizes to a kit-wide permission contract. Should also cross-reference [ADR-014](../Design/adr/adr-014-claude-issue-executor.md) (executor scope) and the future ADR for `/pr-review-packager`'s approval gate.
+
+**Dependency note:** Touches `claude-issue-executor` (ADR-014, ADR-039), `pr-review-packager`, and any future skill with strict-mode gates. Pairs with #29 (ADR-038, `--no-prompt` interaction). Independent of #28 milestone lifecycle but the milestone-lifecycle skills (`/release`, `/complete-milestone`) also have approval gates that this contract would govern.
+
+---
+
+### 33. Project-shape detection in `/release` for non-product projects
+
+**Status:** ready-for-adr
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** v3.3.0 baseline eval — F26 calibration across all three fixtures, with workflow-project severity escalation on research-tracker (see `runs/kit-v3.3.0/baseline-verdict.md` § "Active findings worth fixing before v3.4" #3)
+
+**Context / trigger:** F26 (silent v0.1.0 default on `/release`) reproduced across all three fixtures of the v3.3.0 baseline. md-notes was medium severity (partial-scope honesty), podcast-pipeline mitigated to low via the Caveats section pattern, but research-tracker escalates the severity again because the project explicitly disclaims being a product (PRD has *"I'm not shipping a product"* language; success criteria are user-outcomes not test-pass; build-out plan is markdown-only with no compile/build/deploy step). On a project that isn't a product, `/release` should not pretend to ship one. It currently does — defaults to v0.1.0, generates release notes claiming *"first tagged release of …"*, with no acknowledgement of the workflow-not-product framing in the release body. **Strongest ADR-028-leakage signal in the release surface** across the v3.3.0 baseline.
+
+**Sketch of the idea:** Add **project-shape detection** to `/release`'s preflight. Two changes:
+
+1. **Detection signals** — `/release` scans for non-product project indicators: PRD or normalized-PRD contains *"not [shipping|building] a product"* / *"workflow"* / *"folder of markdown"* language; `Design/build-out-plan.md` Build strategy section says *"There is no compile / build / deploy step"* or equivalent; success criteria are user-outcome strings not test-result strings; no `package.json` / `pyproject.toml` / `go.mod` / `Cargo.toml` / equivalent in repo root. **Two-or-more signals** trigger the non-product code path.
+2. **Non-product release body** — when the non-product path triggers, the release notes lead with a clarifier: *"This is a workflow tag for documentation drift-tracking; the project is not a software product (see PRD for project shape). The version number is for snapshot ordering, not semantic versioning of an API."* Below the clarifier, the standard Features / Chores / Other sections still emit (they're useful regardless), but the framing is workflow-shaped.
+
+Fallback: if the operator wants the standard product-release framing on a borderline-detected project, `--force-product-shape` flag overrides the auto-detection.
+
+**Options in mind:**
+
+- **Auto-detect with override flag** (recommended) — `/release` decides shape from project signals; operator can override with `--force-product-shape` if the auto-detection misclassifies. Strongest UX: the common case (operator doesn't have to think about it) works correctly; the edge case (auto-detection wrong) has an escape hatch.
+- **Operator-set flag with no auto-detection** — `/release --workflow-project` opts into the non-product framing. Simpler spec; relies on operator memory.
+- **No spec change, document the workflow-project caveat in the workflow guide** — operator manually edits the release body if they want non-product framing. Lightest; exactly the gap this entry exists to close.
+- **Detection only, no release-body change** — `/release` flags "this looks like a non-product project — confirm before tagging?" but doesn't change the release body shape. Half-measure.
+
+**Open questions:** What's the minimum signal threshold for the non-product path — two signals, three? How does this interact with `--milestone-phase=N` framing (which is shape-agnostic and useful on both project types)? Does the version-number convention change for non-product projects (e.g. should the kit recommend date-based snapshot tags like `2026.05` instead of semver `0.1.0` for non-product projects)? Where does the canonical "project-shape signals" list live — in `/release`'s SKILL.md, in the workflow guide, or in a new ADR? Should the detection pattern be reused by other release-adjacent skills (`/changelog`, `/audit-milestone`)?
+
+**Consequences to think through:** Easier — non-product projects get release framing that matches their actual shape; F26-class agnostic-framing leak is closed in the release surface; the kit's claim to be workflow-agnostic gets a structural enforcement point (not just author-discipline). Harder — auto-detection has false-positive / false-negative cases (a Python project whose PRD happens to use the word "workflow" might trip detection); detection signals must be tuned conservatively to avoid surprising operators. Maintenance — detection signals are new surface area that needs to evolve as the kit's PRD / build-out templates evolve; signal drift would silently break the rule.
+
+**Alignment note for the ADR:** New ADR, no clear predecessor. Should cross-reference ADR-028 (workflow-agnostic framing — this is one of the rule's structural enforcement points), [ADR-???]( ) for `/release` skill scope (entry #11, ADR currently unnumbered in feature-ideas.md), and the upcoming ADR from #32 (auto-mode permission contract — `/release`'s approval gate is one of the operations that contract governs).
+
+**Dependency note:** Touches `/release` skill and `/changelog` skill. Independent of #31 / #32 / #34 — could land in any order.
+
+---
+
+### 34. Programmatic equivalent of `/check-plan` for in-skill invocation
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** v3.3.0 baseline eval — kit-architectural meta-friction reproduced across 5 skills (see `runs/kit-v3.3.0/baseline-verdict.md` § "Active findings worth filing but lower-leverage")
+
+**Context / trigger:** `/check-plan`'s slash-command surface assumes operator invocation. Five skills in the v3.3.0 baseline (`/adr-writer`, `/prepare-issue`, `/changelog` inlined in `/release`, `/milestone-summary` inlined in `/complete-milestone`, plus `/pr-review-packager` for ADR-references checks) document that they should chain `/check-plan` as a sub-step, but **slash-commands aren't invokable from inside another skill's execution**. Every affected skill currently self-flags this with a transparency note (cross-skill consistency on the behavior across all 5) and substitutes the deterministic check logic inline. The substitution works, but the kit-architectural friction is real: the spec says one thing, the runtime can't deliver it, and every skill has to know to substitute. Two paths exist; they have different design implications.
+
+**Sketch of the idea:** Decide between two fix shapes:
+
+1. **Programmatic equivalent.** Ship a non-slash-command interface to `/check-plan`'s logic — likely a Python / bash script under `bin/check-plan` (or a kit-internal helper module) that skills can invoke without the slash-command surface. Skills update their specs to invoke the programmatic version when running as a sub-step; the slash-command form remains for direct operator use.
+2. **Formalize inline-substitution as canonical.** Document that skills with `/check-plan` chain points run the deterministic check logic inline rather than invoking the slash-command. Update the affected skill specs to make the inline pattern canonical, not a workaround. No new code; pure documentation change.
+
+**Options in mind:** Already covered in the sketch above. Path 1 is strictly bigger (new code, new entry-point surface, programmatic-vs-slash-command duality to maintain). Path 2 is strictly smaller (documentation-only). The choice depends on whether the kit values *spec-grade enforcement* (path 1: skills always run check-plan logic, deterministically) over *spec-runtime alignment* (path 2: spec matches what the runtime can actually do; no fiction).
+
+**Open questions:** Does `/check-plan`'s logic have any operator-interactive parts (asks-for-confirmation steps) that wouldn't work in a programmatic-only context? If yes, programmatic equivalent needs a non-interactive variant — that's strictly more code. If the inline-substitution pattern becomes canonical (path 2), what's the contract for the inline substitution — every skill writes its own subset of check-plan logic, or there's a shared inline-substitution snippet skills reference? How does this affect future skills with `/check-plan` chain points — they have to know the substitution pattern from day 1.
+
+**Consequences to think through:** **Path 1 (programmatic equivalent):** Easier — skills can deterministically run check-plan logic without operator involvement; spec aligns with runtime. Harder — new code surface, maintenance of two entry points (slash-command + programmatic) that must stay consistent. **Path 2 (inline-substitution canonical):** Easier — no new code; spec matches runtime. Harder — every skill with a check-plan chain point carries its own inline substitution; spec drift between skills would silently break consistency.
+
+**Alignment note for the ADR:** New ADR, depending on path chosen. Path 1 is more architectural (new entry-point surface) and clearly ADR-worthy. Path 2 is more documentation-cleanup; could be a one-paragraph clarification rather than a full ADR. **Decision call before drafting** — recommend the operator decide path 1 vs path 2 before invoking `/adr-writer` on this entry, since the ADR shape differs significantly.
+
+**Dependency note:** Touches every skill with a documented `/check-plan` chain point (`/adr-writer`, `/prepare-issue`, `/changelog`, `/milestone-summary`, `/pr-review-packager`). Independent of #31 / #32 / #33 — could land in any order, but recommend after #32 (the permission contract) since the inline-substitution-vs-programmatic question intersects with auto-mode / strict-mode contracts.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.
