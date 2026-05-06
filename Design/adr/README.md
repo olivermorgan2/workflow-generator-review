@@ -54,6 +54,10 @@ fences is preserved.
 | [ADR-037](adr-037-milestone-lifecycle.md) | Milestone lifecycle commands (audit, summary, complete) | accepted |
 | [ADR-038](adr-038-tighten-prompt-step.md) | Tighten the prompt step — auto-chain executor and `--no-prompt` mode | accepted |
 | [ADR-039](adr-039-plan-mode-for-significant-tasks.md) | Require Claude Code plan mode for significant tasks in `claude-issue-executor` | accepted |
+| [ADR-040](adr-040-cross-skill-design-question-carry-forward.md) | Cross-skill design-question carry-forward across the implementation chain | accepted |
+| [ADR-041](adr-041-auto-mode-permission-contract.md) | Auto-mode permission contract for strict-mode skill operations | accepted |
+| [ADR-042](adr-042-project-shape-detection-in-release.md) | Project-shape detection in `/release` for non-product projects | accepted |
+| [ADR-043](adr-043-programmatic-check-plan.md) | Programmatic equivalent of `/check-plan` for in-skill invocation | accepted |
 
 <!-- adr-index:end -->
 
