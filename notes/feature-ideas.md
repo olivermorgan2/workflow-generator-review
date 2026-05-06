@@ -1025,6 +1025,33 @@ Adding a new runtime template today requires a five-step ritual: add template �
 
 ---
 
+### 38. Ambiguous/hybrid worked example for `/release` project-shape detection
+
+**Status:** idea
+**Target:** v-next
+**Captured:** 2026-05-06
+**Origin:** PR #77 review feedback (issue #71 — project-shape detection in `/release`, ADR-042). Self-review flagged that the worked example covers product-shaped, auto-detected workflow-shaped, and override-path scenarios but not the hybrid case where signals split across the threshold.
+
+**Context / trigger:** `skills/release/example.md` walks four of the five expected scenarios for ADR-042's detection logic — Pace Drift (product), `lit-review-2026` (auto-detected workflow), and the two `--force-*` override variants plus the mutually-exclusive abort. Missing: a hybrid project where signals split (e.g. 2 product-leaning, 2 workflow-leaning). Hybrid repos are exactly where the ≥2-signal threshold is most likely to misclassify, which is why the override flags exist; the example.md gap means operators have to reason about the override decision tree from the spec text alone.
+
+**Sketch of the idea:** Add a fourth top-level variant section to `skills/release/example.md` parallel to the existing variants, walking through a hybrid project end-to-end. Show: (1) the signal scoring on both sides, (2) the deterministic auto-resolved outcome under current rules, (3) at least one override path showing when an operator would reach for `--force-product-shape` vs `--force-workflow-shape` and why, (4) the annotated tag content for both the auto-resolved and overridden paths. Concrete framing: a research repo that ships a small reproducibility CLI, or similar — picked so the signal split is unambiguous.
+
+**Options in mind:**
+
+1. **Inline within `skills/release/example.md`** — extend the existing file with a fourth variant section, matching the style of the three current variants.
+2. **Spin out to a sibling `example-hybrid.md`** — keeps `example.md` focused on the canonical path, hybrid case lives separately.
+3. **Do nothing** — operators read the override edge-case rows in SKILL.md instead.
+
+**Open questions:** What concrete project framing makes the signal split unambiguous (research-with-CLI seems strongest but may need vetting)? Should the example cover both `--force-product` and `--force-workflow` overrides side-by-side, or just one path? Should it be presented as one hybrid project shown twice (auto vs override) or two slightly-different hybrid projects to keep each variant clean?
+
+**Consequences to think through:** Easier — clearer override guidance for the most error-prone case; reduces operator burden of reasoning about the override decision tree from spec alone. Harder — `example.md` gets longer; some risk of the framing implying "hybrid" is a third shape value when the design is binary `product | workflow` with overrides. Maintenance — if ADR-042's signal list is ever extended (deferred per ADR Consequences), the hybrid example needs to be re-balanced so the split still demonstrates the threshold case.
+
+**Alignment note:** No new ADR required — governed entirely by ADR-042's existing decisions. This is purely a worked-example gap. Likely files directly as a small documentation issue once batched, skipping the ADR step.
+
+**Dependency note:** Self-contained doc work on `skills/release/example.md`. Touches no other files.
+
+---
+
 ## Future Entries
 
 Features for consideration in later versions. Ordered by theme.
@@ -1169,6 +1196,95 @@ Features for consideration in later versions. Ordered by theme.
 **Open questions:** What's the lowest-common-denominator skill spec that still produces useful output? Does this dilute the kit's identity as a Claude Code workflow?
 
 **Consequences to think through:** Expands addressable users; weakens Claude Code-native advantages (plan mode, skills system); meaningful ongoing maintenance across AI tools that evolve independently.
+
+---
+
+### AI PR review module for GitHub pull requests
+
+**Status:** ready-for-adr
+**Target:** future
+**Captured:** 2026-05-06
+
+**Context / trigger:** The Kit currently carries a project from planning through implementation and PR creation, but the review step remains largely manual once the PR is open on GitHub. An optional AI review layer would extend the existing GitHub-first workflow without changing the Kit's core install model or shifting review out of GitHub.[1][2]
+
+**Sketch of the idea:** Add an optional module in the same repo as the Kit that can be installed into target projects. The module runs on `pull_request` events, reviews the PR using a hybrid diff-first approach, and posts a structured review into the GitHub PR as summary comments plus selective high-confidence line comments. Claude Code remains the implementation agent, but a helper can ingest unresolved PR comments and convert them into a remediation prompt for manual follow-up rather than autonomous fixes.[2][3][1]
+
+**Options in mind:**
+- Same repo, optional module, install-time opt-in.
+- GitHub-only review surface; no separate dashboard or non-GitHub provider support in v1.[2]
+- OpenRouter as the provider path, with an OpenAI-family model as the default review model.[4]
+- Claude Code helper reads PR comments for remediation, but comments are still addressed manually in v1.[1]
+
+**Open questions:**
+- Should the default model be pinned for reproducibility or set to the latest recommended OpenRouter OpenAI model alias?
+- What is the cleanest installer flag and target-project layout for the optional module?
+- What exact helper interface should Claude Code use to ingest unresolved PR comments?
+- Should the first version post only one structured top-level review comment, or allow selective inline comments as well?
+
+**Consequences to think through:**
+- Easier: extends the existing PR workflow with a GitHub-native review loop and preserves GitHub as the review inbox.
+- Easier: keeps Claude Code focused on implementation while GitHub remains the review surface.[1]
+- Harder: introduces a new external API dependency and secret-management path in target projects.
+- Harder: review quality will vary depending on how much context is provided beyond the PR change set.
+
+**Dependency note:** Touches the current PR flow centred on `pr-review-packager` and may later intersect with the permission-contract rules for any helper that writes back to GitHub or automates remediation flows.[1]
+
+---
+
+### Full-codebase indexing and retrieval for AI PR review
+
+**Status:** idea
+**Target:** future
+**Captured:** 2026-05-06
+
+**Context / trigger:** A hybrid diff-first reviewer is the right v1 because it is simpler and cheaper, but some PRs depend on broader architecture, shared contracts, and cross-file patterns that cannot be inferred reliably from the PR alone. Future versions may need a richer way to supply repository context when the PR is complex or high-risk.[3]
+
+**Sketch of the idea:** Add an optional repository-context layer for the AI reviewer. This could include indexing the codebase, retrieving semantically relevant files, linking shared interfaces or configuration files, and selectively expanding context for risky pull requests instead of relying only on the changed lines and nearby files.[3]
+
+**Options in mind:**
+- Lightweight retrieval over repository files at review time.
+- Pre-built full-codebase indexing with embeddings or other relevance ranking.
+- Escalation model: only invoke broader retrieval for risky or cross-cutting PRs.
+- Always-on full-repository context, likely too heavy for the Kit's first implementation.
+
+**Open questions:**
+- What should trigger retrieval or indexing: file count, path patterns, labels, or explicit user flags?
+- Should the context source include only code, or also ADRs, README files, and design notes?
+- How much extra context can be included before latency and cost become too high?
+- Does this remain an optional module extension, or become a second-tier mode within the same module?
+
+**Consequences to think through:**
+- Easier: improves review quality for architectural, cross-cutting, and framework-sensitive changes.[3]
+- Harder: adds complexity, processing cost, and more moving parts than a general-user v1 should expose.
+- Harder: raises new questions about indexing freshness, storage, and retrieval quality.
+
+**Dependency note:** Deferred by design behind the v1 hybrid diff-first reviewer. Should only be revisited after the basic module, GitHub comment flow, and Claude Code remediation helper are stable.
+
+---
+
+### Advanced model and API-key configuration for AI PR review
+
+**Status:** idea
+**Target:** future
+**Captured:** 2026-05-06
+
+**Context / trigger:** The simplest v1 for general users is one provider, one required secret, and one recommended default model. More advanced teams may later want to select different models, route different repositories to different models, or manage credentials at repository, environment, or organization level.[5][6]
+
+**Sketch of the idea:** Extend the optional AI PR review module so users can override the default review model, set repository-level or environment-level config variables, and optionally support different API keys or model profiles for different projects or review modes. Keep the secure storage path in GitHub Actions secrets, while allowing non-sensitive model and behavior settings via GitHub Actions variables.[6][5]
+
+**Options in mind:**
+- Keep one required secret `OPENROUTER_API_KEY` and one optional variable for model override.[5][6]
+- Support multiple model profiles such as default, cheap, deep-review.
+- Support organization-level secrets for teams managing several repos.[5]
+
+**Sources** (shared across the three AI-PR-review entries above):
+
+1. `docs/workflow-guide.md` (kit-internal)
+2. `docs/install.md` (kit-internal)
+3. Graphite — *How AI Models Handle Limited Context: Full Repo vs Diff* — https://graphite.com/guides/ai-code-review-context-full-repo-vs-diff
+4. OpenRouter — *GPT-5.5 API Pricing & Providers* — https://openrouter.ai/openai/gpt-5.5
+5. GitHub Docs — *Using secrets in GitHub Actions* — https://docs.github.com/actions/security-guides/using-secrets-in-github-actions
+6. GitHub Docs — *Store information in variables* — https://docs.github.com/actions/learn-github-actions/variables
 
 ---
 
