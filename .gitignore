@@ -25,3 +25,9 @@
 # Personal SSH key material — must not land in the kit repo
 mac-connect
 mac-connect.pub
+
+# Audit-harness regenerable outputs — re-run audit.py / adr-audit.py / verify.py
+# to recreate. Convention documented in notes/skills-audit-*/README.md.
+notes/skills-audit-*/skills-audit.csv
+notes/skills-audit-*/adr-attributions.csv
+notes/skills-audit-*/verification-*.json
