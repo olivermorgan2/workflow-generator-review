@@ -1,7 +1,7 @@
 
 # ADR-005: Generate documentation and templates directly into the target repository
 
-**Status:** accepted
+**Status:** superseded by ADR-045
 **Date:** 2026-04-12
 
 ## Context
@@ -26,8 +26,8 @@ Generate the core workflow documents and templates directly into the target repo
 
 - `README.md`
 - `CLAUDE.md`
-- `Design/adr/`
-- `Design/ai-summary.md`
+- `design/adr/`
+- `design/ai-summary.md`
 - workflow docs
 - issue and PR templates where appropriate.
 

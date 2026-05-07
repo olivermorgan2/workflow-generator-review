@@ -19,7 +19,7 @@ fences is preserved.
 | [ADR-002](adr-002-new-project-only-scope.md) | Limit v1 to new-project setup only | superseded by ADR-022 |
 | [ADR-003](adr-003-prd-intake-model.md) | Support three PRD intake paths | accepted |
 | [ADR-004](adr-004-github-first-workflow-model.md) | Use a GitHub-first workflow model | accepted |
-| [ADR-005](adr-005-documentation-and-template-architecture.md) | Generate documentation and templates directly into the target repository | accepted |
+| [ADR-005](adr-005-documentation-and-template-architecture.md) | Generate documentation and templates directly into the target repository | superseded by ADR-045 |
 | [ADR-006](adr-006-claude-code-execution-model.md) | Use issue-by-issue, plan-first Claude Code execution | accepted |
 | [ADR-007](adr-007-claude-md-starter-template.md) | Provide a CLAUDE.md starter template with placeholders | accepted |
 | [ADR-008](adr-008-dedicated-prompts-folder.md) | Dedicated prompts/ folder for issue session briefs | accepted |
@@ -37,7 +37,7 @@ fences is preserved.
 | [ADR-020](adr-020-workflow-guide.md) | End-to-end workflow guide doc | accepted |
 | [ADR-021](adr-021-example-projects.md) | Example / starter projects gallery | accepted |
 | [ADR-022](adr-022-drop-version-qualifiers-from-kit-scope.md) | Drop version qualifiers from kit-scope decisions | accepted |
-| [ADR-023](adr-023-auto-sync-adr-index.md) | Auto-sync the ADR index in `Design/adr/README.md` | accepted |
+| [ADR-023](adr-023-auto-sync-adr-index.md) | Auto-sync the ADR index in `design/adr/README.md` | accepted |
 | [ADR-024](adr-024-mvp-vocabulary-versus-v1.md) | MVP scoping vocabulary — neutral "In scope / Out of scope" headings | accepted |
 | [ADR-025](adr-025-license.md) | License the kit under MIT | accepted |
 | [ADR-026](adr-026-kit-versioning-policy.md) | Versioning policy for the kit | accepted |
@@ -49,7 +49,7 @@ fences is preserved.
 | [ADR-032](adr-032-implementation-phases.md) | Implementation phases in PRD review and planning | accepted |
 | [ADR-033](adr-033-clarify-step.md) | Clarification step (`/clarify`) before ADR drafting | accepted |
 | [ADR-034](adr-034-plan-checker.md) | Plan-checker quality gate for ADRs and issue prompts | accepted |
-| [ADR-035](adr-035-state-md-session-continuity.md) | `Design/state.md` and session-continuity artefacts | accepted |
+| [ADR-035](adr-035-state-md-session-continuity.md) | `design/state.md` and session-continuity artefacts | accepted |
 | [ADR-036](adr-036-granularity-control.md) | Granularity / density control for phased plans | accepted |
 | [ADR-037](adr-037-milestone-lifecycle.md) | Milestone lifecycle commands (audit, summary, complete) | accepted |
 | [ADR-038](adr-038-tighten-prompt-step.md) | Tighten the prompt step — auto-chain executor and `--no-prompt` mode | accepted |
@@ -59,6 +59,7 @@ fences is preserved.
 | [ADR-042](adr-042-project-shape-detection-in-release.md) | Project-shape detection in `/release` for non-product projects | accepted |
 | [ADR-043](adr-043-programmatic-check-plan.md) | Programmatic equivalent of `/check-plan` for in-skill invocation | accepted |
 | [ADR-044](adr-044-mechanical-rewrite-immutability-exception.md) | Mechanical path-string rewrite as an exception to ADR immutability | accepted |
+| [ADR-045](adr-045-rename-design-directory-lowercase.md) | Rename `Design/` → `design/` for root-directory casing consistency | accepted |
 
 <!-- adr-index:end -->
 
