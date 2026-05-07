@@ -215,9 +215,10 @@ cross-reference._
 
 ### 9. Audit all SKILL.md files for structural consistency and token economy
 
-**Status:** filed-#84
+**Status:** filed-#84 (Phase 1 shipped in #86)
 **Captured:** 2026-05-06
 **Filed:** #84 (2026-05-07)
+**Shipped (Phase 1):** #86 (2026-05-07)
 
 **Trigger:** Skills are loaded into context every session — their length and structure directly affect token usage on every invocation. Without periodic audit, drift accumulates: some skills bloat with examples, others diverge in section structure, and noise (stale ADR attributions, restated conventions) reaccumulates.
 
