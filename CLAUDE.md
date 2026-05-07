@@ -23,9 +23,14 @@ that gets generated for a target project — that one is rendered from
   touch installation, scope, PRD intake, GitHub conventions, templates, or
   execution model
 - `docs/repo-structure.md` — kit vs. target-project layout
-- `generic-project-workflow.md` — the reference workflow the kit implements
-- `Claude Code Workflow Kit MVP Spec.md` and `Claude Code Workflow Kit — Build-Out Plan.md`
-  — product direction
+- `docs/workflow-guide.md` — current action-oriented walkthrough of the kit
+- `docs/skills.md` — current functional skill reference
+- `README.md` — current positioning and product direction
+- `archive/` — archived original framing (historical audit
+  trail only; do not treat as current direction). Includes
+  `mvp-spec.md`, `build-out-plan.md`, and
+  `generic-project-workflow.md` (the original methodology design doc
+  the kit operationalises), plus `phase-1/` historical issue prompts.
 
 ## Working rules
 
@@ -38,7 +43,8 @@ that gets generated for a target project — that one is rendered from
 - Keep the kit lightweight — no premature automation, no speculative
   abstractions.
 - Never edit accepted ADRs in place. If a decision needs to change, add a
-  new ADR that supersedes the old one.
+  new ADR that supersedes the old one. Mechanical path-string rewrites
+  are an explicit exception (ADR-044).
 
 ## Developing the kit on itself (dogfooding)
 
