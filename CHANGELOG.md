@@ -2,7 +2,7 @@
 
 All notable changes to this project.
 
-## v4.0.0 — kit-wide rename `Design/` → `design/` (UNRELEASED)
+## v4.0.0 — kit-wide rename `Design/` → `design/` (2026-05-07)
 
 Range: `v3.4.0..v4.0.0`
 
