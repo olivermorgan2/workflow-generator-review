@@ -15,10 +15,10 @@ single
 
 ## In-flight issue
 
-- **Issue:** #91
-- **Prompt:** prompts/issue-091-examples-prompt-cleanup.md
-- **Branch:** examples-issue-prompt-cleanup
-- **Status:** verified
+- **Issue:** none
+- **Prompt:** n/a
+- **Branch:** n/a
+- **Status:** none
 
 <!-- state:in-flight:end -->
 
@@ -30,11 +30,11 @@ Rolling list of the last five issues completed (oldest drops off as
 new entries land). One line each: PR number, ADR if any, one-line
 summary.
 
+- #92 — none — repoint examples/*.md walk-throughs from deleted issue-prompt files to prompts/issue-NNN-*.md (closes #91)
 - #90 — none — finish legacy notes/issue-prompt.md removal: collapse guide into prompts/_template.md header + fix four broken references (closes #89)
 - #88 — none — unify example.md naming and document orchestration-only skills (#84 Phase 3 — closes #84)
 - #87 — none — bring 4 over-budget SKILL.md files under L2 budget via sidecars (#84 Phase 2)
 - #86 — none — rewrite 19 SKILL.md descriptions to canonical Use-when shape (#84 Phase 1)
-- #85 — none — prune type-3 ADR attributions across 17 SKILL.md files
 
 <!-- state:recent:end -->
 
@@ -50,6 +50,6 @@ none
 
 ## Continue here
 
-PR #90 merged (squash `0a261e0`); issue #89 closed and `notes/refactoring-ideas.md` entry #8 marked `shipped-#90`. `prompts/_template.md` now carries the self-documenting placeholder mapping table — the sequencing dependency that held back #91 is resolved. Issue #91 prepared and ready for execution against this clean base: `notes/refactoring-ideas.md` entry #12 (`examples/*.md` broken refs to the deleted issue-prompt files), prompt at `prompts/issue-091-examples-prompt-cleanup.md`, ~3 files / ~9 link edits, docs-only, no ADR. Next: run `/claude-issue-executor prompts/issue-091-examples-prompt-cleanup.md` in a fresh session.
+PR #92 merged (squash `a6c4045`); issue #91 closed and `notes/refactoring-ideas.md` entry #12 marked `shipped-#92`. Sibling cleanup to PR #90 done — the kit now has no remaining broken references to the deleted `notes/issue-prompt.md` / `notes/issue-prompt-sample.md` / `docs/issue-prompt-guide.md` files outside `archive/`. No in-flight issue. Next: pick the next item from `notes/refactoring-ideas.md` Unfiled (open entries: #1, #3, #4, #5, #6, #10, #11) when ready.
 
 <!-- state:continue-here:end -->

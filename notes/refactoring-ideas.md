@@ -198,9 +198,10 @@ cross-reference._
 
 ### 12. Repoint `examples/*.md` references to deleted issue-prompt files
 
-**Status:** filed-#91
+**Status:** shipped-#92
 **Captured:** 2026-05-12
 **Filed:** #91 (2026-05-12)
+**Shipped:** #92 (2026-05-12, closes #91)
 
 **Trigger:** PR #90 (issue #89) finished the legacy `notes/issue-prompt.md` removal across `docs/` but the same partial-cleanup pattern lives in `examples/`. Surfaced in #89's eval summary as an explicit out-of-scope follow-up; immediate filing trigger was the PR #90 review comment requesting either an in-PR why-out-of-scope note or a follow-up issue.
 
