@@ -222,9 +222,10 @@ All three render real broken links in `examples/`, which is a primary onboarding
 
 ### 8. Finish the legacy `notes/issue-prompt.md` removal across the kit
 
-**Status:** filed-#89
+**Status:** shipped-#90
 **Captured:** 2026-05-06
 **Filed:** #89 (2026-05-12)
+**Shipped:** #90 (2026-05-12, closes #89)
 
 **Trigger:** Surfaced 2026-05-06 while cleaning up `notes/`. The legacy manual-fill template `notes/issue-prompt.md` and worked example were deleted in a partial cleanup, but four still-current docs were left referencing them — broken links until this is finished.
 

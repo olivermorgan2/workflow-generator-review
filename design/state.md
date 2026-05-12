@@ -50,6 +50,6 @@ none
 
 ## Continue here
 
-Issue #91 prepared: `notes/refactoring-ideas.md` entry #12 (`examples/*.md` broken refs to deleted issue-prompt files) filed as #91 and prompt written to `prompts/issue-091-examples-prompt-cleanup.md`. Same shape as #89 — docs-only, no ADR, ~3 files / ~9 link edits. **Sequencing dependency:** PR #90 (issue #89) is still open against main; #91's narrative rewrites point at `prompts/_template.md`'s self-documenting header which lands via #90, so the executor should merge #90 first or read the PR-#90 branch's version of `_template.md`. Next: run `/claude-issue-executor prompts/issue-091-examples-prompt-cleanup.md` in a fresh session (and merge PR #90 first for cleanest base).
+PR #90 merged (squash `0a261e0`); issue #89 closed and `notes/refactoring-ideas.md` entry #8 marked `shipped-#90`. `prompts/_template.md` now carries the self-documenting placeholder mapping table — the sequencing dependency that held back #91 is resolved. Issue #91 prepared and ready for execution against this clean base: `notes/refactoring-ideas.md` entry #12 (`examples/*.md` broken refs to the deleted issue-prompt files), prompt at `prompts/issue-091-examples-prompt-cleanup.md`, ~3 files / ~9 link edits, docs-only, no ADR. Next: run `/claude-issue-executor prompts/issue-091-examples-prompt-cleanup.md` in a fresh session.
 
 <!-- state:continue-here:end -->
